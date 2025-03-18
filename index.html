@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invisible Bits Consulting</title>
+    <style>
+        body {
+            background-color: black;
+            color: #00ff00;
+            font-family: monospace;
+            padding: 20px;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            justify-content: space-between;
+        }
+        .terminal {
+            max-width: 800px;
+            margin: auto;
+            flex-grow: 1;
+        }
+        .input-line {
+            display: flex;
+        }
+        .prompt {
+            margin-right: 5px;
+        }
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 16px;
+            background-color: #00ff00;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #008000;
+            padding: 10px;
+            background-color: black;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal">
+        <pre>Welcome to Invisible Bits Consulting!
+Type 'help' to see available commands.
+        </pre>
+        <div id="output"></div>
+        <div class="input-line">
+            <span class="prompt">></span>
+            <input type="text" id="commandInput" autofocus style="background: none; border: none; color: #00ff00; font-family: monospace; width: 100%; outline: none;">
+            <span class="cursor"></span>
+        </div>
+    </div>
+
+    <script>
+        const outputDiv = document.getElementById("output");
+        const commandInput = document.getElementById("commandInput");
+
+        const commands = {
+            "help": "Available commands: about, products, services, blog, contact",
+            "about": "Invisible Bits Consulting: Blockchain Security & IT Solutions\nWebsite: https://invisible-bits.com",
+            "products": "- Smart Contract Audits\n- Blockchain Security Tools\n- Secure dApp Development",
+            "services": "- Cybersecurity Consulting\n- Blockchain Infrastructure Security\n- Penetration Testing",
+            "blog": "Visit: https://invisible-bits.com/blog",
+            "contact": "Email: contact@invisible-bits.com"
+        };
+
+        commandInput.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                const cmd = commandInput.value.trim();
+                if (cmd) {
+                    outputDiv.innerHTML += `> ${cmd}\n`;
+                    if (commands[cmd]) {
+                        outputDiv.innerHTML += `${commands[cmd]}\n`;
+                    } else {
+                        outputDiv.innerHTML += `Unknown command: '${cmd}'. Type 'help' for a list of commands.\n`;
+                    }
+                    commandInput.value = "";
+                }
+            }
+        });
+    </script>
+
+    <div class="footer">
+        &copy; 2025 Invisible Bits Consulting. All rights reserved.
+    </div>
+</body>
+</html>
