@@ -205,13 +205,7 @@ export default function ContactSection() {
                 )}
               </DialogContent>
             </Dialog>
-            <Button 
-              size="lg"
-              variant="outline"
-              className="!bg-transparent !hover:bg-transparent border-slate-600 text-slate-300 hover:text-white hover:border-slate-500 px-8 py-3"
-            >
-              View Portfolio
-            </Button>
+          
           </div>
         </div>
 
