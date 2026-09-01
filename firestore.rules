@@ -1,0 +1,17 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Public contact form: anyone may file an enquiry, nobody may read,
+    // alter or enumerate them from the client. Fields are shape-validated.
+    match /enquiries/{id} {
+      allow create: if
+        request.resource.data.keys().hasOnly(['name', 'email', 'topic', 'message', 'createdAt', 'page']) &&
+        request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() < 200 &&
+        request.resource.data.email is string && request.resource.data.email.size() > 5 && request.resource.data.email.size() < 200 &&
+        request.resource.data.topic is string && request.resource.data.topic.size() < 120 &&
+        request.resource.data.message is string && request.resource.data.message.size() > 7 && request.resource.data.message.size() < 5000;
+      allow read, update, delete: if false;
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}

@@ -2,91 +2,57 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Invisible Bits — design tokens
+ * Palette is taken verbatim from Invisible_Bits_Brand_Style_Guide.pdf:
+ *   Deep Midnight Blue #0B1E2D · Teal/Cyan #0ABAB5 -> #00F5D4
+ *   Cool Gray #4A4F57 · Light Silver #E8ECEF · Signal Green #28C76F
+ * The site is dark-first ("dark blue backgrounds with glowing teal highlights").
+ */
+
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 206 55% 6%;
+    --foreground: 206 18% 92%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 206 45% 10%;
+    --card-foreground: 206 18% 92%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 206 50% 8%;
+    --popover-foreground: 206 18% 92%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Teal #00F5D4 — the CTA / glow colour */
+    --primary: 172 100% 48%;
+    --primary-foreground: 206 61% 8%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 206 40% 14%;
+    --secondary-foreground: 206 18% 92%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 206 30% 16%;
+    --muted-foreground: 206 14% 68%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Teal #0ABAB5 — the deeper end of the brand gradient */
+    --accent: 178 90% 38%;
+    --accent-foreground: 206 61% 8%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 206 18% 96%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Signal Green #28C76F — validation / trust signals only */
+    --success: 147 67% 47%;
 
-    --radius: 0.5rem;
+    --border: 206 30% 20%;
+    --input: 206 32% 18%;
+    --ring: 172 100% 48%;
 
-    --sidebar-background: 0 0% 98%;
+    --radius: 0.875rem;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --ink: 206 61% 11%;
 
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Glassmorphism primitives (backdrop-blur 10-20px, 1px light border) */
+    --glass-bg: 190 60% 80% / 0.05;
+    --glass-border: 180 100% 90% / 0.12;
+    --glass-blur: 16px;
   }
 }
 
@@ -95,7 +61,147 @@
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+    /* Sticky nav is 4rem tall — keep anchored headings clear of it */
+    scroll-padding-top: 4.5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+    /* Ambient teal glow bed sitting behind the whole page */
+    background-image:
+      radial-gradient(60rem 40rem at 12% -10%, hsl(178 90% 38% / 0.14), transparent 60%),
+      radial-gradient(50rem 34rem at 92% 6%, hsl(172 100% 48% / 0.10), transparent 60%),
+      radial-gradient(70rem 50rem at 50% 110%, hsl(206 61% 20% / 0.55), transparent 65%);
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-tight;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Skip-link + keyboard focus: never remove the ring, only restyle it */
+  :focus-visible {
+    outline: 3px solid hsl(var(--ring));
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.28);
+    color: hsl(var(--foreground));
+  }
+}
+
+@layer components {
+  /* Frosted panel — the core surface of the whole site */
+  .glass {
+    background: linear-gradient(
+      145deg,
+      hsl(var(--glass-bg)),
+      hsl(206 50% 40% / 0.02)
+    );
+    backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    border: 1px solid hsl(var(--glass-border));
+    box-shadow:
+      0 1px 0 0 hsl(180 100% 95% / 0.07) inset,
+      0 24px 60px -28px hsl(206 80% 2% / 0.9);
+  }
+
+  /* Interactive variant: lifts and warms its border on hover/focus */
+  .glass-interactive {
+    @apply glass transition-[transform,box-shadow,border-color] duration-300 ease-out;
+  }
+
+  .glass-interactive:hover,
+  .glass-interactive:focus-within {
+    border-color: hsl(172 100% 48% / 0.38);
+    box-shadow:
+      0 1px 0 0 hsl(180 100% 95% / 0.10) inset,
+      0 0 0 1px hsl(172 100% 48% / 0.10),
+      0 30px 70px -30px hsl(172 100% 40% / 0.35);
+    transform: translateY(-3px);
+  }
+
+  /* Thin luminous top edge, like light catching the lip of glass */
+  .glass-edge::before {
+    content: '';
+    position: absolute;
+    inset-inline: 12%;
+    top: -1px;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(172 100% 60% / 0.7),
+      transparent
+    );
+  }
+
+  .text-gradient-teal {
+    background-image: linear-gradient(100deg, #0ABAB5 0%, #00F5D4 48%, #7DFBE6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Hairline grid, used behind dark sections for depth */
+  .bg-hexgrid {
+    background-image:
+      linear-gradient(hsl(180 100% 80% / 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(180 100% 80% / 0.045) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(70% 60% at 50% 40%, #000 30%, transparent 100%);
+    -webkit-mask-image: radial-gradient(70% 60% at 50% 40%, #000 30%, transparent 100%);
+  }
+
+  .section-pad {
+    @apply py-20 md:py-28 lg:py-32;
+  }
+}
+
+@layer utilities {
+  /* Client logos are supplied in their own brand colours; many are dark and
+     would vanish on midnight blue. Normalise to silver, restore colour on hover. */
+  .logo-mono {
+    filter: brightness(0) invert(1);
+    opacity: 0.62;
+    transition: opacity 240ms ease, filter 240ms ease;
+  }
+
+  .logo-mono:hover,
+  .group:hover .logo-mono {
+    filter: none;
+    opacity: 1;
+  }
+
+  .marquee-mask {
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+}
+
+/* Honour the OS "reduce motion" setting everywhere, including the marquee
+   and the WebGL scenes (which check the same query in JS). */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
