@@ -601,6 +601,7 @@ function Contact() {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [state, setState] = useState<SendState>('idle');
+  const [errors, setErrors] = useState<{ name?: string; email?: string; message?: string }>({});
   const formRef = useRef<HTMLDivElement>(null);
 
   const pickTopic = (t: string) => {
@@ -613,7 +614,19 @@ function Contact() {
 
   async function submit(e: FormEvent) {
     e.preventDefault();
-    if (!name.trim() || !email.trim() || message.trim().length < 8) return;
+    // Never fail silently — a dead button loses the enquiry.
+    const found: { name?: string; email?: string; message?: string } = {};
+    if (!name.trim()) found.name = 'Please tell us who you are.';
+    if (!email.trim()) found.email = 'We need an address to reply to.';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim()))
+      found.email = 'That address looks incomplete.';
+    if (message.trim().length < 8) found.message = 'A sentence about the work helps us route this.';
+    setErrors(found);
+    if (Object.keys(found).length > 0) {
+      const first = Object.keys(found)[0];
+      document.getElementById(`c-${first === 'message' ? 'msg' : first}`)?.focus();
+      return;
+    }
     setState('sending');
     try {
       await submitEnquiry({ name, email, topic, message });
@@ -690,10 +703,12 @@ function Contact() {
                     name="name"
                     autoComplete="name"
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => { setName(e.target.value); setErrors((p) => ({ ...p, name: undefined })); }}
                     required
-                    className="mt-1.5 w-full rounded-lg border border-gray-700 bg-black/60 px-3.5 py-2.5 text-sm text-white outline-none transition-colors focus:border-[#00F5D4]/60"
+                    aria-invalid={Boolean(errors.name)}
+                    className={`mt-1.5 w-full rounded-lg border bg-black/60 px-3.5 py-2.5 text-sm text-white outline-none transition-colors focus:border-[#00F5D4]/60 ${errors.name ? 'border-red-500/70' : 'border-gray-700'}`}
                   />
+                  {errors.name && <p className="mt-1.5 text-xs text-red-400">{errors.name}</p>}
                 </div>
                 <div>
                   <label htmlFor="c-email" className="text-xs font-medium uppercase tracking-wide text-white/60">
@@ -705,10 +720,12 @@ function Contact() {
                     type="email"
                     autoComplete="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => { setEmail(e.target.value); setErrors((p) => ({ ...p, email: undefined })); }}
                     required
-                    className="mt-1.5 w-full rounded-lg border border-gray-700 bg-black/60 px-3.5 py-2.5 text-sm text-white outline-none transition-colors focus:border-[#00F5D4]/60"
+                    aria-invalid={Boolean(errors.email)}
+                    className={`mt-1.5 w-full rounded-lg border bg-black/60 px-3.5 py-2.5 text-sm text-white outline-none transition-colors focus:border-[#00F5D4]/60 ${errors.email ? 'border-red-500/70' : 'border-gray-700'}`}
                   />
+                  {errors.email && <p className="mt-1.5 text-xs text-red-400">{errors.email}</p>}
                 </div>
               </div>
 
@@ -721,10 +738,12 @@ function Contact() {
                   name="message"
                   rows={3}
                   value={message}
-                  onChange={(e) => setMessage(e.target.value)}
+                  onChange={(e) => { setMessage(e.target.value); setErrors((p) => ({ ...p, message: undefined })); }}
                   required
-                  className="mt-1.5 w-full resize-y rounded-lg border border-gray-700 bg-black/60 px-3.5 py-2.5 text-sm text-white outline-none transition-colors focus:border-[#00F5D4]/60"
+                  aria-invalid={Boolean(errors.message)}
+                  className={`mt-1.5 w-full resize-y rounded-lg border bg-black/60 px-3.5 py-2.5 text-sm text-white outline-none transition-colors focus:border-[#00F5D4]/60 ${errors.message ? 'border-red-500/70' : 'border-gray-700'}`}
                 />
+                {errors.message && <p className="mt-1.5 text-xs text-red-400">{errors.message}</p>}
               </div>
 
               {state === 'error' && (
