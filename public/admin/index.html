@@ -73,8 +73,8 @@ iframe{width:100%;height:82vh;border:1px solid var(--border);border-radius:12px;
 </style>
 </head>
 <body>
-<div id="gate" hidden><div class="card"><div class="brand" style="margin-bottom:10px">Invisible <b>Bits</b> · Pipeline Console</div><p id="gateMsg" class="small" style="margin:0 0 16px">Checking access…</p><button class="btn primary" id="gateBtn" hidden>Sign in with Google</button> <button class="btn" id="gateOut" hidden>Use another account</button></div></div>
-<header>
+<div id="gate"><div class="card"><div class="brand" style="margin-bottom:10px">Invisible <b>Bits</b> · Pipeline Console</div><p id="gateMsg" class="small" style="margin:0 0 16px">Checking access…</p><button class="btn primary" id="gateBtn" hidden>Sign in with Google</button> <button class="btn" id="gateOut" hidden>Use another account</button></div></div>
+<header hidden>
   <span class="brand">Invisible <b>Bits</b> · Pipeline Console</span>
   <span class="mode" id="modeChip"><i></i><span id="modeText">loading</span></span>
   <span class="mode" id="whoChip" hidden><span id="whoText"></span>&nbsp;<a href="#" id="signOut">sign out</a></span>
@@ -84,8 +84,8 @@ iframe{width:100%;height:82vh;border:1px solid var(--border);border-radius:12px;
     <button data-tab="messages">Messages</button><button data-tab="pilot">Pilot</button><button data-tab="simulation">Simulation</button><button data-tab="approvals">Approvals</button><button data-tab="logs">Logs</button>
   </nav>
 </header>
-<div class="strip" id="strip"></div>
-<main>
+<div class="strip" id="strip" hidden></div>
+<main hidden>
 
 <section id="overview">
   <h2>Overview</h2><p class="lede">Where the latest run stands, the ten send gates, and the actions you can take. Every action below writes files on this machine only; nothing leaves it.</p>
@@ -200,8 +200,10 @@ const $=s=>document.querySelector(s);
 const h=(t,a={},...k)=>{const e=document.createElement(t);for(const[x,v]of Object.entries(a)){if(x==='class')e.className=v;else if(x.startsWith('on'))e.addEventListener(x.slice(2),v);else if(x==='href'){e.setAttribute('href',/^(https?:\/\/|#|mailto:)/i.test(String(v||''))?v:'#')}else if(v!=null&&v!==false)e.setAttribute(x,v===true?'':v)}for(const c of k.flat())if(c!=null)e.append(c.nodeType?c:document.createTextNode(c));return e};
 const API=(window.PIPELINE_API_BASE||'').replace(/\/$/,'');let TOKEN_FN=null;
 async function authHeaders(){return TOKEN_FN?{Authorization:'Bearer '+await TOKEN_FN()}:{}}
-function showGate(msg,code){const g=document.getElementById('gate');g.hidden=false;document.getElementById('gateMsg').textContent=msg;document.getElementById('gateBtn').hidden=code===403||code===0;document.getElementById('gateOut').hidden=code!==403}
+function showGate(msg,code){hideShell();const g=document.getElementById('gate');g.hidden=false;document.getElementById('gateMsg').textContent=msg;document.getElementById('gateBtn').hidden=code===403||code===0;document.getElementById('gateOut').hidden=code!==403}
 function hideGate(){document.getElementById('gate').hidden=true}
+function revealShell(){for(const sel of ['header','#strip','main'])document.querySelector(sel).hidden=false}
+function hideShell(){for(const sel of ['header','#strip','main'])document.querySelector(sel).hidden=true}
 async function call(u,opt){opt=opt||{};const r=await fetch(API+u,{...opt,headers:{...(opt.headers||{}),...await authHeaders()}});if(r.status===401||r.status===403){const e=await r.json().catch(()=>({}));showGate(e.error||'Sign in required.',r.status);throw new Error('auth '+r.status)}return r}
 const get=u=>call(u).then(r=>r.json());const post=(u,b)=>call(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b||{})}).then(r=>r.json());
 async function loadDash(){try{const r=await call('/dashboard');document.getElementById('dashFrame').srcdoc=await r.text()}catch(e){}}
@@ -301,7 +303,7 @@ async function loadPilots(){const ps=await get('/api/pilots');const box=$('#pilo
   card.append(h('div',{class:'row',style:'margin-top:12px'},isEmail?h('input',{id:'send-'+b.batch_id,placeholder:'type '+STATE.confirm_phrases.send,style:'width:220px'}):null,isEmail?h('button',{class:'btn danger',disabled:!ok,title:why.join(' · '),onclick:async()=>{const r=await post('/api/pilot/send',{batch_id:b.batch_id,confirm:$('#send-'+b.batch_id).value});toast(r.status+(r.reasons?': '+r.reasons.join('; '):''))}},'Send batch'):null,h('span',{class:'small'},ok?'all conditions met':'Blocked: '+why.join(' · '))));
   box.append(card)}}
 async function loadJobs(){const js=await get('/api/jobs');const box=$('#jobList');box.innerHTML='';for(const j of js.sort((a,b)=>b.started.localeCompare(a.started)))box.append(h('div',{style:'padding:8px 0;border-bottom:1px solid var(--border)'},h('a',{href:'#',onclick:async e=>{e.preventDefault();const d=await get('/api/jobs?id='+j.id);$('#jobLog').textContent=d.cmd+'\n\n'+(d.tail||'(no output yet)')}},j.id),' ',h('span',{class:'chip '+(j.status==='done'?'good':j.status==='running'?'warn':'crit')},j.status)))}
-let STARTED=false;function start(){hideGate();if(STARTED)return;STARTED=true;refreshState();setInterval(refreshState,15000)}
+let STARTED=false;function start(){hideGate();revealShell();if(STARTED)return;STARTED=true;refreshState();setInterval(refreshState,15000)}
 async function boot(){let ac;try{ac=await fetch(API+'/api/auth-config').then(r=>r.json())}catch(e){showGate('Cannot reach the pipeline API at '+(API||location.origin)+'.',0);return}
  if(ac.mode!=='firebase'){start();return}
  showGate('Sign in with a Google account that is on the admin list.',401);
