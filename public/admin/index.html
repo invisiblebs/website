@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Invisible Bits · Pipeline Console</title>
+<meta name="robots" content="noindex,nofollow">
+<script>window.PIPELINE_API_BASE='https://ib-pipeline-432152106926.europe-west1.run.app';</script>
+
+<style>
+:root{--bg:#0d1014;--surface:#161a20;--surface2:#1d222a;--border:#2c333d;--ink:#f1f4f7;--ink2:#c3cbd4;--muted:#8c97a3;--accent:#00f5d4;--accent-ink:#00312a;--good:#3dd68c;--warn:#f2b544;--crit:#ff6b6b;--link:#7cc9ff}
+*{box-sizing:border-box}[hidden]{display:none!important}
+#gate{position:fixed;inset:0;z-index:100;background:var(--bg);display:grid;place-items:center;padding:24px}#gate .card{max-width:460px;text-align:center}
+html{font-size:16px}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Inter,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+a{color:var(--link)}
+header{position:sticky;top:0;z-index:20;background:rgba(13,16,20,.96);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px}
+.brand{font-weight:700;letter-spacing:-.02em;font-size:18px}.brand b{color:var(--accent)}
+.mode{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:999px;padding:5px 12px;font-size:14px;color:var(--ink2)}
+.mode i{width:9px;height:9px;border-radius:50%;background:var(--good);display:inline-block}.mode.off i{background:var(--crit)}
+#tabs{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+#tabs button{background:transparent;border:1px solid var(--border);color:var(--ink2);border-radius:999px;padding:8px 16px;font:inherit;font-size:15px;cursor:pointer}
+#tabs button[aria-selected=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.strip{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;border-bottom:1px solid var(--border);background:var(--surface)}
+@media (max-width:1000px){.strip{grid-template-columns:repeat(3,minmax(0,1fr))}.step{border-bottom:1px solid var(--border)}}
+@media (max-width:1100px){.action{grid-template-columns:1fr}}
+.step{padding:14px 18px;border-right:1px solid var(--border);cursor:pointer}.step:last-child{border-right:0}.step:hover{background:var(--surface2)}
+.step .n{font-size:26px;font-weight:700;letter-spacing:-.02em;font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace}
+.step .t{font-weight:600;color:var(--ink)}.step .d{font-size:13.5px;color:var(--muted);line-height:1.4;margin-top:2px}
+.step.off .n{color:var(--crit)}
+main{padding:22px 24px 90px;max-width:1500px;margin:0 auto}
+h2{font-size:24px;margin:0 0 4px;letter-spacing:-.02em}h3{font-size:17px;margin:0 0 10px}
+.lede{color:var(--ink2);margin:0 0 18px;max-width:900px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+.grid{display:grid;gap:14px}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+@media (max-width:1100px){.g3,.g4{grid-template-columns:1fr 1fr}}
+@media (max-width:1000px){.g2{grid-template-columns:1fr}}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{background:var(--surface2);border:1px solid var(--border);color:var(--ink);border-radius:10px;padding:9px 14px;font:inherit;font-size:15px;cursor:pointer}
+.btn:hover{border-color:var(--ink2)}.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.btn.danger{background:#3a1a1a;border-color:#7a2b2b;color:#ffb3b3}.btn.good{background:#153826;border-color:#2b6b45;color:#b8f5d0}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.action{display:grid;grid-template-columns:220px 1fr;gap:14px;align-items:start;padding:14px 0;border-bottom:1px solid var(--border)}.action:last-child{border-bottom:0}
+.action .what{font-weight:600}.action .how{color:var(--muted);font-size:14.5px;margin-top:2px}
+input,select,textarea{background:var(--bg);border:1px solid var(--border);color:var(--ink);border-radius:8px;padding:8px 10px;font:inherit;font-size:15px}
+textarea{width:100%;min-height:240px;line-height:1.5;font-family:inherit}
+input[type=number]{width:90px}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{text-align:left;color:var(--muted);font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.04em;padding:10px 10px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface)}
+td{padding:11px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--surface2)}
+.num{text-align:right;font-family:"JetBrains Mono",ui-monospace,Menlo,monospace}
+.chip{display:inline-block;border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:600;border:1px solid var(--border);color:var(--ink2);white-space:nowrap}
+.chip.good{color:#0d3b26;background:var(--good);border-color:var(--good)}.chip.warn{color:#3f2b00;background:var(--warn);border-color:var(--warn)}
+.chip.crit{color:#3b0d0d;background:var(--crit);border-color:var(--crit)}.chip.neutral{background:var(--surface2)}
+.small{font-size:14px;color:var(--muted)}.eyebrow{font-size:12.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.val{font-size:30px;font-weight:700;letter-spacing:-.02em;font-family:"JetBrains Mono",ui-monospace,Menlo,monospace}
+.scroll{overflow:auto;max-height:70vh}
+.gate{display:grid;grid-template-columns:90px 1fr;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}.gate ul{margin:4px 0 0;padding-left:18px;color:var(--ink2);font-size:14.5px}
+.msg{white-space:pre-wrap;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:15.5px;line-height:1.55}
+.subject{font-weight:600;font-size:16px;margin-bottom:6px}
+.tr-excluded td{opacity:.45;text-decoration:line-through}
+iframe{width:100%;height:82vh;border:1px solid var(--border);border-radius:12px;background:#fff}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--accent);color:var(--accent-ink);padding:10px 18px;border-radius:999px;font-weight:600;opacity:0;transition:opacity .25s;z-index:60}
+.log{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:13px;white-space:pre-wrap;max-height:70vh;overflow:auto;color:var(--ink2)}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:6px 12px;font-size:15px}.kv div:nth-child(odd){color:var(--muted)}
+/* drawer */
+#drawer{position:fixed;top:0;right:0;width:min(860px,96vw);height:100vh;background:var(--surface);border-left:1px solid var(--border);z-index:40;overflow:auto;padding:20px 24px 80px;box-shadow:-20px 0 60px rgba(0,0,0,.5);transform:translateX(102%);transition:transform .2s}
+#drawer.open{transform:none}
+#drawer .close{position:sticky;top:0;float:right;margin-left:12px}
+.pill{display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:2px 8px;font-size:13px;margin:2px 4px 2px 0}
+.pager{display:flex;gap:8px;align-items:center;margin-top:10px}
+.callout{border-left:4px solid var(--accent);padding:10px 14px;background:var(--surface2);border-radius:8px;color:var(--ink2);font-size:15px}
+</style>
+</head>
+<body>
+<div id="gate" hidden><div class="card"><div class="brand" style="margin-bottom:10px">Invisible <b>Bits</b> · Pipeline Console</div><p id="gateMsg" class="small" style="margin:0 0 16px">Checking access…</p><button class="btn primary" id="gateBtn" hidden>Sign in with Google</button> <button class="btn" id="gateOut" hidden>Use another account</button></div></div>
+<header>
+  <span class="brand">Invisible <b>Bits</b> · Pipeline Console</span>
+  <span class="mode" id="modeChip"><i></i><span id="modeText">loading</span></span>
+  <span class="mode" id="whoChip" hidden><span id="whoText"></span>&nbsp;<a href="#" id="signOut">sign out</a></span>
+  <span class="mode off" id="killChip"><i></i><span id="killText">sending disabled</span></span>
+  <nav id="tabs">
+    <button data-tab="overview" aria-selected="true">Overview</button><button data-tab="sources">Sources &amp; accounts</button><button data-tab="signals">Signals</button><button data-tab="leads">Leads</button>
+    <button data-tab="messages">Messages</button><button data-tab="pilot">Pilot</button><button data-tab="simulation">Simulation</button><button data-tab="approvals">Approvals</button><button data-tab="logs">Logs</button>
+  </nav>
+</header>
+<div class="strip" id="strip"></div>
+<main>
+
+<section id="overview">
+  <h2>Overview</h2><p class="lede">Where the latest run stands, the ten send gates, and the actions you can take. Every action below writes files on this machine only; nothing leaves it.</p>
+  <div class="grid g2">
+    <div class="card">
+      <h3>Actions</h3>
+      <div class="action"><button class="btn" onclick="post('/api/sources/refresh',{}).then(r=>{toast('downloading registers, job '+r.job);pollJob(r.job)})">Download registers</button>
+        <div><div class="what">Fetch the public registers from the internet and rebuild the account list.</div><div class="how">Reads ESMA MiCA CSV, L2Beat API, NYDFS list, VARA register, ECB list into <code>data/real/</code>, then rebuilds <code>accounts.jsonl</code>. Needs network. About 1 minute. Does not contact anyone.</div></div></div>
+      <div class="action"><div><button class="btn primary" onclick="runPipeline('real')">Run pipeline on real accounts</button><div class="row" style="margin-top:8px"><label class="small">simulation trials <input id="trials" type="number" value="300"></label><label class="small"><input id="refreshAccounts" type="checkbox"> rebuild accounts first</label></div></div>
+        <div><div class="what">Score every account × role, decide the lawful channel per country, render and lint all messages, run the Monte Carlo simulation, evaluate the gates.</div><div class="how">Output goes to <code>out/run-…</code> and becomes "latest". Leads, Messages, Pilot and Simulation tabs all read from it. 30–60 seconds.</div></div></div>
+      <div class="action"><button class="btn" onclick="runPipeline('synthetic')">Run on synthetic test corpus</button>
+        <div><div class="what">Same pipeline on 2,600 invented contacts.</div><div class="how">Only for testing the mechanics. Names and companies are fake and clearly marked. Do not review messages from this mode.</div></div></div>
+      <div class="action"><button class="btn" onclick="post('/api/build-dashboard',{}).then(r=>{toast('rebuilding dashboard');pollJob(r.job)})">Rebuild dashboard</button>
+        <div><div class="what">Regenerate the charts page in the Simulation tab from the latest run.</div><div class="how">Runs automatically after each pipeline run; use this if the Simulation tab looks stale.</div></div></div>
+    </div>
+    <div class="card"><h3>Latest run</h3><div class="grid g2" id="ovTiles"></div>
+      <h3 style="margin-top:14px">Simulation at day 30 (target tier)</h3><p class="small">P50 and P10–P90 per scenario; P(hit) is the chance of reaching 10 or more.</p><div class="scroll" id="ovSim"></div></div>
+  </div>
+  <div class="card" style="margin-top:14px"><h3>Send gates <span class="small" id="gateSummary"></span></h3><p class="small">All ten must pass, and sending must be enabled in Approvals, before the Send button in Pilot does anything.</p><div id="ovGates"></div></div>
+  <div class="card" style="margin-top:14px"><h3>Recent jobs</h3><div id="ovJobs" class="small"></div></div>
+</section>
+
+<section id="sources" hidden>
+  <h2>Sources &amp; accounts</h2>
+  <p class="lede"><b>Source</b> = a public register or directory we read (a licence list, L2Beat, a grants list). <b>Account</b> = a company found in a source, with its facts. Accounts become <b>Leads</b> in the next tab once a decision-maker role is attached and scored. Providers stay blocked until approved.</p>
+  <div class="row" style="margin-bottom:10px"><span class="small" id="srcTotal"></span></div>
+  <div class="card scroll"><table id="srcTable"></table></div>
+  <div class="card" style="margin-top:14px"><h3>Accounts</h3><div class="row"><input id="accQ" placeholder="search company" oninput="loadAccounts()"><select id="accRegion" onchange="loadAccounts()"><option value="">all regions</option><option>EU</option><option>US</option><option>MENA</option><option value="??">unknown</option></select><span class="small" id="accTotal"></span></div><div class="scroll" style="margin-top:8px"><table id="accTable"></table></div></div>
+</section>
+
+<section id="signals" hidden>
+  <h2>Signals: people found by what they do, not by their title</h2>
+  <p class="lede">A <b>lens</b> is a behaviour that reveals the problem we solve: someone writing publicly about post-quantum migration or prover soundness, a DAO voting an audit budget, a protocol that just lost funds to a forged proof, a company advertising a cryptography role, an org shipping PQ code. Each row is one observed fact with its evidence link. A signal that matches an account raises that account's score; a signal from a person we cannot place becomes its own lead whose only channel is a public reply in the thread they started, which is lawful everywhere.</p>
+  <div class="row" style="margin-bottom:10px">
+    <select id="sigLens" onchange="loadSignals()"><option value="">all lenses</option></select>
+    <input id="sigQ" placeholder="search text, person, entity" oninput="loadSignals()" style="width:260px">
+    <span class="small" id="sigTotal"></span>
+    <button class="btn" style="margin-left:auto" onclick="refreshSignals()">Collect signals now (live, open sources only)</button>
+  </div>
+  <div class="grid g4" id="sigLensCards" style="margin-bottom:12px"></div>
+  <div class="card scroll"><table id="sigTable"></table></div>
+</section>
+
+<section id="leads" hidden>
+  <h2>Leads</h2>
+  <p class="lede"><b>Lead</b> = one decision-maker role at an account (CTO, CISO, Head of Protocol…) that scores 60 or more on the ICP model and has at least one lawful channel in its country. Until a contact-data provider is approved the person is a placeholder shown as <span class="pill">[pending]</span>; the company, role, score and channel are real. Click a row to see why it scored, the law for its country, and its messages.</p>
+  <div class="row" style="margin-bottom:10px">
+    <input id="leadQ" placeholder="search company or role" oninput="loadLeads()" style="width:240px">
+    <select id="leadRegion" onchange="loadLeads()"><option value="">all regions</option><option>EU</option><option>US</option><option>MENA</option></select>
+    <select id="leadSegment" onchange="loadLeads()"><option value="">all segments</option><option value="S1_GCC_INSTITUTIONAL">S1 GCC institutional</option><option value="S2_AI_AGENT_ENTERPRISE">S2 AI-agent enterprise</option><option value="S3_EU_REGULATED_MIDMARKET">S3 EU regulated</option><option value="S4_WEB3_RWA">S4 Web3 / RWA</option><option value="S5_PQ_MANDATE">S5 post-quantum</option></select>
+    <select id="leadChannel" onchange="loadLeads()"><option value="">any lawful channel</option><option value="cold_email">cold email</option><option value="linkedin">LinkedIn</option><option value="warm_intro">warm intro</option><option value="event">event</option><option value="public_reply">public reply (in their thread)</option></select>
+    <select id="leadTier" onchange="loadLeads()"><option value="">tier A + B</option><option value="A">tier A only</option></select>
+    <input id="leadCountry" placeholder="country" style="width:90px" oninput="loadLeads()">
+    <span class="small" id="leadTotal"></span>
+  </div>
+  <div class="card scroll"><table id="leadTable"></table></div>
+  <div class="pager"><button class="btn" onclick="leadPage(-1)">Previous</button><span class="small" id="leadPage">page 1</span><button class="btn" onclick="leadPage(1)">Next</button></div>
+</section>
+
+<section id="messages" hidden>
+  <h2>Messages</h2>
+  <p class="lede">Every message rendered in the latest run, exactly as it would go out, best-scored lead first. Edit the text in place (it is re-checked by the claims linter and any earlier approval is cleared), then approve or reject. Only approved, lint-clean messages can be sent from a pilot.</p>
+  <div class="row" style="margin-bottom:10px">
+    <input id="msgQ" placeholder="search company or text" oninput="loadMsgs(0)" style="width:240px">
+    <select id="msgRegion" onchange="loadMsgs(0)"><option value="">all regions</option><option>EU</option><option>US</option><option>MENA</option></select>
+    <select id="msgSegment" onchange="loadMsgs(0)"><option value="">all segments</option><option value="S1_GCC_INSTITUTIONAL">S1</option><option value="S2_AI_AGENT_ENTERPRISE">S2</option><option value="S3_EU_REGULATED_MIDMARKET">S3</option><option value="S4_WEB3_RWA">S4</option><option value="S5_PQ_MANDATE">S5</option></select>
+    <select id="msgChannel" onchange="loadMsgs(0)"><option value="cold_email">cold email</option><option value="linkedin_note">LinkedIn note</option><option value="linkedin_dm">LinkedIn DM</option><option value="">all channels</option></select>
+    <select id="msgReview" onchange="loadMsgs(0)"><option value="">any review state</option><option value="unreviewed">unreviewed</option><option value="approve">approved</option><option value="reject">rejected</option></select>
+    <span class="small" id="msgTotal"></span>
+  </div>
+  <div id="msgList" class="grid g2"></div>
+  <div class="pager"><button class="btn" onclick="msgPage(-1)">Previous</button><span class="small" id="msgPageLbl">page 1</span><button class="btn" onclick="msgPage(1)">Next</button></div>
+</section>
+
+<section id="pilot" hidden>
+  <h2>Pilot</h2>
+  <p class="lede">A pilot is a batch of up to 50 messages you review one by one before anything is sent. Email batches are written to an outbox on disk. LinkedIn batches are never sent by software: the console prepares the note and the DM, you send them by hand from your own account, and log it here.</p>
+  <div class="card"><h3>How the batch is chosen</h3><div class="callout" id="pilotRule"></div></div>
+  <div class="card" style="margin-top:14px"><div class="row">
+    <label class="small">batch size <input id="pilotN" type="number" value="50"></label>
+    <label class="small">regions <input id="pilotRegions" value="US,EU" style="width:110px"></label>
+    <label class="small">channel <select id="pilotChannel"><option value="cold_email">cold email</option><option value="linkedin">LinkedIn (assisted manual)</option></select></label>
+    <button class="btn primary" onclick="buildPilot()">Build batch</button>
+    <span class="small">Building only writes a file; it does not send.</span></div></div>
+  <div id="pilotList" style="margin-top:14px"></div>
+</section>
+
+<section id="simulation" hidden>
+  <div class="card" id="ablationCard" style="margin-bottom:14px"><h3>Strategy evidence (scenario E, no warm intros)</h3><p class="small">Removing a channel from the mix costs this many qualified opportunities. Generated by <code>scripts/ablation.py</code>; re-run after every pipeline run.</p><div id="ablation" class="scroll"></div></div>
+  <h2>Simulation</h2><p class="lede">The full dashboard for the latest run: funnel, scenarios, sensitivity, reach and law, sources, buyer panel, gates.</p>
+  <iframe id="dashFrame" title="Simulation dashboard" sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>
+</section>
+
+<section id="approvals" hidden>
+  <h2>Approvals</h2><p class="lede">Manual sign-offs that the gates check. Each toggle records who and when. Enabling sending is the last step and needs the confirmation phrase.</p>
+  <div class="card"><table id="apprTable"></table></div>
+  <div class="card" style="margin-top:14px"><h3>Kill switch</h3><p class="small">Sending stays disabled until every gate passes and this is enabled with the phrase <code id="phraseEnable"></code>. It also blocks logging LinkedIn items as sent.</p>
+    <div class="row"><input id="enablePhrase" placeholder="type the phrase" style="width:260px"><button class="btn danger" onclick="setSending(true)">Enable sending</button><button class="btn" onclick="setSending(false)">Disable sending</button></div></div>
+</section>
+
+<section id="logs" hidden>
+  <h2>Logs</h2><p class="lede">Output of every job started from this console. Click a job to read its log.</p>
+  <div class="grid g2"><div class="card" id="jobList"></div><div class="card"><div class="log" id="jobLog">select a job</div></div></div>
+</section>
+</main>
+
+<aside id="drawer"><button class="btn close" onclick="closeDrawer()">Close ✕</button><div id="drawerBody"></div></aside>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const h=(t,a={},...k)=>{const e=document.createElement(t);for(const[x,v]of Object.entries(a)){if(x==='class')e.className=v;else if(x.startsWith('on'))e.addEventListener(x.slice(2),v);else if(x==='href'){e.setAttribute('href',/^(https?:\/\/|#|mailto:)/i.test(String(v||''))?v:'#')}else if(v!=null&&v!==false)e.setAttribute(x,v===true?'':v)}for(const c of k.flat())if(c!=null)e.append(c.nodeType?c:document.createTextNode(c));return e};
+const API=(window.PIPELINE_API_BASE||'').replace(/\/$/,'');let TOKEN_FN=null;
+async function authHeaders(){return TOKEN_FN?{Authorization:'Bearer '+await TOKEN_FN()}:{}}
+function showGate(msg,code){const g=document.getElementById('gate');g.hidden=false;document.getElementById('gateMsg').textContent=msg;document.getElementById('gateBtn').hidden=code===403||code===0;document.getElementById('gateOut').hidden=code!==403}
+function hideGate(){document.getElementById('gate').hidden=true}
+async function call(u,opt){opt=opt||{};const r=await fetch(API+u,{...opt,headers:{...(opt.headers||{}),...await authHeaders()}});if(r.status===401||r.status===403){const e=await r.json().catch(()=>({}));showGate(e.error||'Sign in required.',r.status);throw new Error('auth '+r.status)}return r}
+const get=u=>call(u).then(r=>r.json());const post=(u,b)=>call(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b||{})}).then(r=>r.json());
+async function loadDash(){try{const r=await call('/dashboard');document.getElementById('dashFrame').srcdoc=await r.text()}catch(e){}}
+let TOAST_T;function toast(m){const t=$('#toast');t.textContent=m;t.style.opacity=1;clearTimeout(TOAST_T);TOAST_T=setTimeout(()=>t.style.opacity=0,4000)}
+const f0=n=>Math.round(n??0).toLocaleString();const pc=n=>Math.round((n??0)*100)+'%';
+const SEG={S1_GCC_INSTITUTIONAL:'S1 GCC institutional',S2_AI_AGENT_ENTERPRISE:'S2 AI-agent enterprise',S3_EU_REGULATED_MIDMARKET:'S3 EU regulated',S4_WEB3_RWA:'S4 Web3 / RWA',S5_PQ_MANDATE:'S5 post-quantum'};
+const seg=s=>SEG[s]||s||'';
+let STATE={},LEAD_OFF=0,MSG_OFF=0;
+function showTab(t){document.querySelectorAll('#tabs button').forEach(x=>x.setAttribute('aria-selected',String(x.dataset.tab===t)));document.querySelectorAll('main > section').forEach(s=>s.hidden=s.id!==t);if(t==='signals')loadSignals();
+ if(t==='sources')loadSources();if(t==='leads')loadLeads();if(t==='messages')loadMsgs(0);if(t==='approvals')loadApprovals();if(t==='pilot')loadPilots();if(t==='logs')loadJobs();if(t==='simulation'){loadDash();renderAblation()}}
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+
+async function refreshState(){STATE=await get('/api/state');const r=STATE.run||{},c=STATE.counts||{};
+ $('#modeText').textContent=(r.corpus==='real'?'real accounts':r.corpus||'no run')+' · '+(c.sent||0)+' sent';
+ $('#killChip').className='mode '+(STATE.approvals.sending_enabled?'':'off');$('#killText').textContent=STATE.approvals.sending_enabled?'SENDING ENABLED':'sending disabled (kill switch)';
+ $('#phraseEnable').textContent=STATE.confirm_phrases.enable;$('#pilotRule').textContent=STATE.pilot_rule||'';
+ const steps=[['sources',c.sources,'Sources','public registers we read'],['sources',c.accounts,'Accounts','companies found in them'],['leads',c.leads,'Leads','account × role, scored ≥ 60, lawful channel'],['messages',c.messages,'Messages','rendered and linted'],['pilot',c.pilots,'Pilot batches','built for your review'],['pilot',c.sent,'Sent','always 0 until you enable it']];
+ const st=$('#strip');st.innerHTML='';steps.forEach(([tab,n,t,d],i)=>st.append(h('div',{class:'step'+(i===5?' off':''),onclick:()=>showTab(tab)},h('div',{class:'n'},f0(n)),h('div',{class:'t'},t),h('div',{class:'d'},d))));
+ const s=r.summary||{},t=r.targets||{};const tiles=[['Run',r.generated_at?r.generated_at.replace('T',' ').slice(0,16):'none',r.mode||''],['Leads',f0(s.leads),'target '+f0(t.leads_target)+' · '+f0(s.tier_a)+' tier A'],['ICP-fit but consent-only',f0((r.icp_fit_no_channel||{}).consent_required),'need a warm intro or event'],['Messages',f0(s.messages_rendered),f0(s.lint_failures)+' lint failures']];
+ const box=$('#ovTiles');box.innerHTML='';for(const[a,b,cc]of tiles)box.append(h('div',{},h('div',{class:'eyebrow'},a),h('div',{class:'val'},b),h('div',{class:'small'},cc)));
+ const g=$('#ovGates');g.innerHTML='';$('#gateSummary').textContent=(STATE.gates.passed??0)+' of '+(STATE.gates.total??10)+' pass · send allowed: '+String(!!STATE.gates.send_allowed);
+ for(const x of (STATE.gates.gates||[]))g.append(h('div',{class:'gate'},h('span',{class:'chip '+(x.status==='pass'?'good':x.status==='pending'?'warn':'crit')},x.status),h('div',{},h('div',{style:'font-weight:600'},x.id+' · '+x.name),h('div',{class:'small'},x.doc),h('ul',{},...x.evidence.slice(0,3).map(e=>h('li',{},String(e)))))));
+ const sim=STATE.sim||{},tier=(t.convert_tier||'C3_qualified');const tb=h('table',{},h('thead',{},h('tr',{},h('th',{},'Scenario'),h('th',{class:'num'},'P50'),h('th',{class:'num'},'P10–P90'),h('th',{class:'num'},'P(≥'+(t.converts_target||10)+')'))));const tbody=h('tbody');for(const[k,v]of Object.entries(sim)){const d=(v[tier]||{})['30']||{};tbody.append(h('tr',{},h('td',{},k.replace(/_/g,' ')),h('td',{class:'num'},f0(d.p50)),h('td',{class:'num'},f0(d.p10)+'–'+f0(d.p90)),h('td',{class:'num'},pc(d.p_hit_target))))}tb.append(tbody);$('#ovSim').innerHTML='';$('#ovSim').append(tb);
+ $('#ovJobs').innerHTML='';for(const j of STATE.jobs)$('#ovJobs').append(h('div',{},h('span',{class:'chip '+(j.status==='done'?'good':j.status==='running'?'warn':'crit')},j.status),' ',j.id));}
+async function runPipeline(mode){const j=await post('/api/run',{mode,trials:+$('#trials').value,refresh_accounts:$('#refreshAccounts').checked});toast('pipeline started: '+j.job+' (30–60 s)');pollJob(j.job)}
+function pollJob(id){const t=setInterval(async()=>{const j=await get('/api/jobs?id='+id);if(j.status!=='running'){clearInterval(t);toast(id+' '+j.status);refreshState();if(j.kind==='run')post('/api/build-dashboard',{})}},3000)}
+
+async function renderAblation(){const a=await get('/api/ablation');const el=$('#ablation');if(!el)return;if(a.missing){el.replaceChildren(h('p',{class:'small'},'No ablation yet: run  python3 scripts/ablation.py 200'));return}
+ const b=a.base;const rows=Object.entries(a.ablation).sort((x,y)=>(b['60'].q_mean-y[1]['60'].q_mean)-(b['60'].q_mean-x[1]['60'].q_mean));
+ el.replaceChildren(h('p',{class:'small'},'Base: qualified P50 day 30 '+b['30'].q_p50.toFixed(0)+', day 60 '+b['60'].q_p50.toFixed(0)+' (P≥10 '+(b['60'].p_hit*100).toFixed(0)+'%), day 90 '+b['90'].q_p50.toFixed(0)+'; '+a.trials+' trials'),
+  h('table',{},h('thead',{},h('tr',{},...['Channel removed','Δ qualified d30','Δ qualified d60','Δ qualified d90','P≥10 d60 without it','Cash per marginal qualified'].map(x=>h('th',{},x)))),h('tbody',{},...rows.map(([n,r])=>{const c=(a.cost||{})[n]||{};return h('tr',{},h('td',{},h('b',{},n.replace(/_/g,' '))),h('td',{class:'num'},(b['30'].q_mean-r['30'].q_mean).toFixed(1)),h('td',{class:'num'},(b['60'].q_mean-r['60'].q_mean).toFixed(1)),h('td',{class:'num'},(b['90'].q_mean-r['90'].q_mean).toFixed(1)),h('td',{class:'num'},(r['60'].p_hit*100).toFixed(0)+'%'),h('td',{class:'num'},c.cash_per_qualified?('$'+c.cash_per_qualified.toFixed(0)):(c.cash_60d===0?'free':'n/a')))}))),
+  h('h3',{style:'margin-top:14px'},'Which assumptions decide the outcome (qualified at day 60)'),
+  h('table',{},h('thead',{},h('tr',{},...['Parameter','Conservative','Optimistic','Swing','Evidence'].map(x=>h('th',{},x)))),h('tbody',{},...Object.entries(a.sensitivity).map(([k,v])=>h('tr',{},h('td',{},k.replace(/_/g,' ')),h('td',{class:'num'},v.q60_cons.toFixed(1)),h('td',{class:'num'},v.q60_opt.toFixed(1)),h('td',{class:'num'},h('b',{},v.swing.toFixed(1))),h('td',{class:'small'},h('span',{class:'chip '+(v.est?'warn':'good')},v.est?'ESTIMATE':'sourced'),' ',(v.source||'').slice(0,120)))))))}
+async function loadSources(){const s=await get('/api/sources');$('#srcTotal').textContent=s.accounts_total+' accounts on disk from '+Object.keys(s.counts).length+' sources';const t=$('#srcTable');t.innerHTML='';t.append(h('thead',{},h('tr',{},...['Source','Kind','Region','Status','Accounts loaded','What it gives us'].map(x=>h('th',{},x)))));const b=h('tbody');
+ for(const c of s.config){const cnt=s.counts[c.id];b.append(h('tr',{},h('td',{},c.url?h('a',{href:c.url,target:'_blank',rel:'noopener'},c.label):c.label),h('td',{},h('span',{class:'chip neutral'},c.kind)),h('td',{},c.region),h('td',{},h('span',{class:'chip '+(c.approved?'good':'crit')},c.approved?'free / approved':'needs approval')),h('td',{class:'num'},cnt?cnt.n+' ('+Object.entries(cnt.regions).map(([k,v])=>k+' '+v).join(', ')+')':(c.kind==='provider'?'blocked':'0')),h('td',{class:'small'},c.tos_note||'')))}
+ t.append(b);loadAccounts()}
+async function loadAccounts(){const q=new URLSearchParams({q:$('#accQ').value,region:$('#accRegion').value,limit:80});const r=await get('/api/accounts?'+q);$('#accTotal').textContent=r.total+' accounts';const t=$('#accTable');t.innerHTML='';t.append(h('thead',{},h('tr',{},...['Company','Country','Type','Source','Triggers (why it is a target)','Facts from the source'].map(x=>h('th',{},x)))));const b=h('tbody');for(const a of r.rows)b.append(h('tr',{},h('td',{},a.url?h('a',{href:a.url,target:'_blank',rel:'noopener'},a.account):a.account),h('td',{},a.country),h('td',{},a.company_type),h('td',{},a.source),h('td',{class:'small'},(a.triggers||[]).join(', ')),h('td',{class:'small'},Object.entries(a.facts||{}).map(([k,v])=>k+': '+String(v).slice(0,90)).join(' · '))));t.append(b)}
+
+function leadPage(d){LEAD_OFF=Math.max(0,LEAD_OFF+d*50);loadLeads(true)}
+const LENS_LABEL={};
+async function loadSignals(){const q=new URLSearchParams({lens:$('#sigLens').value,q:$('#sigQ').value,limit:300});const r=await get('/api/signals?'+q);Object.assign(LENS_LABEL,Object.fromEntries(Object.entries(r.lenses).map(([k,v])=>[k,v.label])));
+ const sel=$('#sigLens');if(sel.options.length<=1){for(const[k,v]of Object.entries(r.lenses))sel.append(h('option',{value:k},v.label+' ('+(v.status||'')+')'))}
+ const sm=r.summary||{};$('#sigTotal').textContent=r.total+' signals'+(sm.collected_at?' · collected '+sm.collected_at.replace('T',' ').slice(0,16):' · not collected yet');
+ const cards=$('#sigLensCards');cards.innerHTML='';for(const[k,v]of Object.entries(r.lenses)){const n=(sm.by_lens||{})[k]||0;cards.append(h('div',{class:'card',style:'cursor:pointer',onclick:()=>{sel.value=k;loadSignals()}},h('div',{class:'eyebrow'},v.label),h('div',{class:'val'},String(n)),h('div',{class:'small'},v.detects),h('div',{class:'small',style:'margin-top:4px'},h('span',{class:'chip '+(v.status==='live'?'good':v.status==='curated'?'neutral':'warn')},v.status.replace(/_/g,' ')),' route: '+v.route.replace(/_/g,' '))))}
+ const t=$('#sigTable');t.innerHTML='';t.append(h('thead',{},h('tr',{},...['Strength','Date','Lens','Who','What (evidence)','Themes','Route','Lead'].map(x=>h('th',{},x)))));const b=h('tbody');
+ for(const g of r.rows){const who=g.person?g.person+(g.handle?' (@'+g.handle+')':''):(g.handle?'@'+g.handle:g.entity);b.append(h('tr',{},h('td',{class:'num'},'●'.repeat(g.strength)),h('td',{class:'small'},g.date),h('td',{class:'small'},LENS_LABEL[g.lens]||g.lens),h('td',{},h('b',{},who),h('div',{class:'small'},g.role_hint||g.entity||'')),h('td',{},h('a',{href:g.url,target:'_blank',rel:'noopener'},g.title||g.url),h('div',{class:'small'},g.snippet||'')),h('td',{class:'small'},(g.theme||[]).map(x=>r.themes[x]||x).join(', ')),h('td',{class:'small'},(g.route||'').replace(/_/g,' ')),h('td',{},g.lead_id?h('a',{href:'#',onclick:e=>{e.preventDefault();openLead(g.lead_id)}},'open lead'):h('span',{class:'small'},'—'))))}
+ t.append(b)}
+async function refreshSignals(){await post('/api/signals/refresh',{});toast('collecting signals from open sources; watch Logs');setTimeout(loadSignals,20000)}
+async function loadLeads(keep){if(!keep)LEAD_OFF=0;const q=new URLSearchParams({q:$('#leadQ').value,region:$('#leadRegion').value,segment:$('#leadSegment').value,channel:$('#leadChannel').value,tier:$('#leadTier').value,country:$('#leadCountry').value.toUpperCase(),limit:50,offset:LEAD_OFF});const r=await get('/api/leads?'+q);$('#leadTotal').textContent=r.total+' leads match';$('#leadPage').textContent='showing '+(LEAD_OFF+1)+'–'+Math.min(LEAD_OFF+50,r.total)+' of '+r.total;
+ const t=$('#leadTable');t.innerHTML='';t.append(h('thead',{},h('tr',{},...['Priority · fit','Company','Role','Segment','Country','Lawful channels','Public hook','Person',''].map(x=>h('th',{},x)))));const b=h('tbody');
+ for(const c of r.rows){const tr=h('tr',{class:'clickable'+(c.excluded?' tr-excluded':''),onclick:()=>openLead(c.id)},h('td',{class:'num'},h('b',{},c.priority??c.score),h('div',{class:'small'},'fit '+c.score+' × '+(c.win_factor??1)),h('span',{class:'chip '+(c.tier==='A'?'good':'neutral')},c.tier),' ',h('span',{class:'chip '+(c.route==='direct'?'neutral':'warn'),title:c.procurement_class||''},(c.route||'direct').replace(/_/g,' '))),h('td',{},h('b',{},c.company)),h('td',{},c.title),h('td',{},seg(c.segment)),h('td',{},c.country),h('td',{},...(c.channel_plan||[]).map(x=>h('span',{class:'pill'},x.replace('_',' ')))),h('td',{class:'small'},c.has_hook?'✓ '+c.hook:'—'),h('td',{class:'small'},c.first_name==='[pending]'?h('span',{class:'pill'},'[pending] provider'):c.first_name),h('td',{},h('button',{class:'btn',onclick:async e=>{e.stopPropagation();if(c.excluded){await post('/api/leads/exclude',{id:c.id,undo:true})}else{const why=prompt('Why exclude '+c.company+'?');if(why==null)return;await post('/api/leads/exclude',{id:c.id,reason:why})}loadLeads(true)}},c.excluded?'Restore':'Exclude')));b.append(tr)}t.append(b)}
+
+async function openLead(id){const d=await get('/api/lead/'+encodeURIComponent(id));if(d.error){toast(d.error);return}const L=d.lead,A=d.account||{},law=d.law;const body=$('#drawerBody');body.innerHTML='';
+ body.append(h('h2',{},L.company),h('div',{class:'small',style:'margin-bottom:12px'},L.title+' · '+seg(L.segment)+' · '+L.country+' · source '+L.source_id+(d.excluded?' · EXCLUDED: '+d.excluded.reason:'')));
+ body.append(h('div',{class:'grid g2'},
+  h('div',{class:'card'},h('h3',{},'Priority '+(L.priority??L.score)+' = fit '+L.score+' × '+(L.win_factor??1)+' (tier '+L.tier+')'),h('div',{class:'kv'},...Object.entries(L.score_parts||{}).flatMap(([k,v])=>[h('div',{},k.replace(/_/g,' ')),h('div',{class:'num',style:'text-align:left'},String(v))]),h('div',{},'winnability'),h('div',{},(L.procurement_class||'mid')+' → '+(L.route||'direct').replace(/_/g,' ')+' (× '+(L.win_factor??1)+')')),h('p',{class:'small',style:'margin-top:8px'},'Fit = does the account have the problem and the mandate. Winnability = would they buy from a principal-led firm rather than a Big Four / SI. Lead = fit ≥ 60 and priority ≥ 50; tier A = priority ≥ 75.')),
+  h('div',{class:'card'},h('h3',{},'Facts from the source'),h('div',{class:'kv'},...Object.entries(A.facts||{}).flatMap(([k,v])=>[h('div',{},k),h('div',{},String(v))]),h('div',{},'triggers'),h('div',{},(L.triggers||[]).join(', ')||'none'),h('div',{},'opener hook'),h('div',{},d.has_hook?'✓ '+d.hook:'none — honest cold opener')),A.url?h('p',{},h('a',{href:A.url,target:'_blank',rel:'noopener'},'open source record')):null)));
+ body.append(h('div',{class:'card',style:'margin-top:12px'},h('h3',{},'Channel law for '+law.country+(law.verified?'':' (not yet verified by counsel)')),h('div',{class:'row'},...[['cold email',law.cold_email],['LinkedIn DM',law.linkedin_dm],['cold call',law.cold_call],['WhatsApp',law.whatsapp]].map(([k,v])=>h('span',{class:'chip '+(v==='Y'?'good':v==='C'?'warn':'crit')},k+': '+({Y:'allowed',C:'conditional',N:'needs consent'}[v]||v)))),h('p',{class:'small',style:'margin-top:8px'},law.basis),h('p',{class:'small'},'Plan for this lead: '+(L.channel_plan||[]).join(' → ')+(L.consent_required?' · consent required on all cold channels':'')),h('p',{class:'small'},'Required footer elements: '+(law.required_elements||[]).join(', '))));
+ if((L.signals||[]).length){body.append(h('div',{class:'card',style:'margin-top:12px'},h('h3',{},'Behavioural signals (why this person or account is a target)'),...L.signals.map(g=>h('div',{style:'padding:6px 0;border-bottom:1px solid var(--border)'},h('span',{class:'chip neutral'},(LENS_LABEL[g.lens]||g.lens)),' ',h('span',{class:'small'},g.date+' · strength '+g.strength),' ',h('a',{href:g.url,target:'_blank',rel:'noopener'},g.title||g.url),g.snippet?h('div',{class:'small'},g.snippet):null))))}
+ const mbox=h('div',{style:'margin-top:12px'});body.append(h('h3',{style:'margin-top:16px'},'Messages for this lead'),mbox);if(!d.messages.length)mbox.append(h('div',{class:'card'},'No rendered messages: no lawful digital channel for this country, or the lead is excluded.'));for(const m of d.messages)mbox.append(msgCard(m,()=>openLead(id)));
+ $('#drawer').classList.add('open')}
+function closeDrawer(){$('#drawer').classList.remove('open')}
+
+function msgCard(m,after){const rv=(m.review||{}).verdict;const lead=m.lead||{};let editing=false;
+ const card=h('div',{class:'card',style:'margin-bottom:12px'});
+ const head=h('div',{class:'row',style:'margin-bottom:8px'},h('b',{},lead.company||m.contact_id),h('span',{class:'small'},(lead.title||'')+' · '+(m.country||'')+' · score '+(lead.score??'')),h('span',{class:'chip neutral'},m.channel.replace('_',' ')),h('span',{class:'chip '+(m.lint.ok?'good':'crit')},m.lint.ok?'lint pass':'lint FAIL'),m.edited?h('span',{class:'chip warn'},'edited'):null,rv?h('span',{class:'chip '+(rv==='approve'?'good':'crit')},rv+'d'):h('span',{class:'chip neutral'},'unreviewed'),m.pending_provider?h('span',{class:'chip warn'},'recipient pending provider'):null);
+ const issues=h('div',{class:'small'},...(m.lint.issues||[]).map(i=>h('div',{style:'color:var(--crit)'},'✗ '+i)),...(m.lint.warnings||[]).map(w=>h('div',{style:'color:var(--warn)'},'⚠ '+w)));
+ const view=h('div',{},m.subject?h('div',{class:'subject'},'Subject: '+m.subject):null,h('div',{class:'msg'},m.body),h('div',{class:'small',style:'margin-top:6px'},'to: '+(m.channel==='cold_email'?(lead.email||'—'):(lead.linkedin_url||'—'))+' · hook: '+(m.hook||'')));
+ const subj=h('input',{value:m.subject||'',style:'width:100%;margin-bottom:8px',placeholder:'subject'});const ta=h('textarea',{},m.body);const edit=h('div',{hidden:true},m.channel==='cold_email'?subj:null,ta);
+ const actions=h('div',{class:'row',style:'margin-top:10px'},
+  h('button',{class:'btn',onclick:()=>{editing=!editing;edit.hidden=!editing;view.hidden=editing;editBtn.textContent=editing?'Cancel edit':'Edit text'}},'Edit text'),
+  h('button',{class:'btn primary',onclick:async()=>{const r=await post('/api/messages/edit',{contact_id:m.contact_id,channel:m.channel,subject:subj.value,body:ta.value});toast(r.lint&&r.lint.ok?'saved, lint pass':'saved, lint FAIL: '+((r.lint||{}).issues||[]).join('; '));after&&after()}},'Save edit (re-lint)'),
+  m.edited?h('button',{class:'btn',onclick:async()=>{await post('/api/messages/reset',{contact_id:m.contact_id,channel:m.channel});toast('reverted to template');after&&after()}},'Revert to template'):null,
+  h('span',{style:'flex:1'}),
+  h('button',{class:'btn good',onclick:async()=>{await post('/api/messages/review',{contact_id:m.contact_id,channel:m.channel,verdict:'approve'});toast('approved');after&&after()}},'Approve'),
+  h('button',{class:'btn danger',onclick:async()=>{const note=prompt('Reason for rejecting (kept with the message)')||'';await post('/api/messages/review',{contact_id:m.contact_id,channel:m.channel,verdict:'reject',note});toast('rejected');after&&after()}},'Reject'));
+ const editBtn=actions.firstChild;card.append(head,issues,view,edit,actions);return card}
+
+function msgPage(d){MSG_OFF=Math.max(0,MSG_OFF+d*20);loadMsgs(MSG_OFF)}
+async function loadMsgs(off){MSG_OFF=off||0;const q=new URLSearchParams({q:$('#msgQ').value,region:$('#msgRegion').value,segment:$('#msgSegment').value,channel:$('#msgChannel').value,review:$('#msgReview').value,limit:20,offset:MSG_OFF});const r=await get('/api/messages?'+q);$('#msgTotal').textContent=r.total+' messages match';$('#msgPageLbl').textContent='showing '+(MSG_OFF+1)+'–'+Math.min(MSG_OFF+20,r.total)+' of '+r.total;const box=$('#msgList');box.innerHTML='';if(!r.rows.length)box.append(h('div',{class:'card'},'Nothing matches. Run the pipeline first, or widen the filters.'));for(const m of r.rows)box.append(msgCard(m,()=>loadMsgs(MSG_OFF)))}
+
+async function loadApprovals(){const a=(await get('/api/state')).approvals;const t=$('#apprTable');t.innerHTML='';t.append(h('thead',{},h('tr',{},...['Sign-off','Status','By / date','Note',''].map(x=>h('th',{},x)))));const b=h('tbody');for(const[k,v]of Object.entries(a)){if(k.startsWith('_')||k==='sending_enabled')continue;b.append(h('tr',{},h('td',{},k.replace(/_/g,' ')),h('td',{},h('span',{class:'chip '+(v.value?'good':'crit')},v.value?'signed':'open')),h('td',{class:'small'},(v.by||'')+' '+(v.date||'')),h('td',{class:'small'},v.note||''),h('td',{},h('button',{class:'btn',onclick:async()=>{const note=v.value?'':(prompt('Note for the record (what was checked)')||'');await post('/api/approvals',{key:k,value:!v.value,note});toast((v.value?'reopened ':'signed ')+k);setTimeout(()=>{loadApprovals();refreshState()},2500)}},v.value?'Reopen':'Sign off'))))}t.append(b)}
+async function setSending(on){const r=await post('/api/approvals',{key:'sending_enabled',value:on,confirm:$('#enablePhrase').value});toast(r.error||(on?'sending ENABLED':'sending disabled'));setTimeout(refreshState,2500)}
+
+async function buildPilot(){const regions=$('#pilotRegions').value.split(',').map(s=>s.trim()).filter(Boolean);const b=await post('/api/pilot/build',{n:+$('#pilotN').value,regions,channel:$('#pilotChannel').value});toast(b.error||('batch '+b.batch_id+': '+b.n+' picked from '+b.candidates_considered+' candidates'));loadPilots()}
+async function loadPilots(){const ps=await get('/api/pilots');const box=$('#pilotList');box.innerHTML='';const chk=STATE.gate_check||{};if(!ps.length)box.append(h('div',{class:'card'},'No batch yet. Choose size, regions and channel above and click Build batch.'));
+ for(const b of ps){const isEmail=b.channel==='cold_email';const why=[];if(!chk.gates_pass)why.push('gates failing: '+(chk.failing||[]).join(', '));if(!chk.sending_enabled)why.push('kill switch is on');if(b.approved!==b.n)why.push((b.n-b.approved)+' of '+b.n+' not yet approved');if(b.pending_provider)why.push(b.pending_provider+' recipients are placeholders');if(!isEmail)why.push('LinkedIn is sent by hand, never by the tool');const ok=!why.length;
+  const card=h('div',{class:'card',style:'margin-bottom:14px'});
+  card.append(h('div',{class:'row'},h('h3',{style:'margin:0'},b.batch_id),h('span',{class:'chip neutral'},isEmail?'cold email':'LinkedIn assisted manual'),h('span',{class:'chip neutral'},b.n+' picked of '+(b.candidates_considered??'?')+' candidates'),h('span',{class:'chip '+(b.approved===b.n&&b.n?'good':'warn')},b.approved+' / '+b.n+' approved'),h('span',{class:'chip '+(b.pending_provider?'warn':'good')},b.pending_provider+' pending provider'),h('span',{class:'small'},'regions '+(b.regions||[]).join(', ')+' · per segment '+Object.entries(b.per_segment||{}).map(([k,v])=>k.split('_')[0]+' '+v).join(', '))));
+  if(b.outbox)card.append(h('p',{class:'small'},'Outbox on disk: '+b.outbox));
+  const tbl=h('table',{});tbl.append(h('thead',{},h('tr',{},...['#','Company · role','Segment','Country','Priority','Why picked','Review',''].map(x=>h('th',{},x)))));const tb=h('tbody');
+  b.messages.forEach((p,i)=>{const det=h('tr',{hidden:true},h('td',{colspan:8},isEmail?h('div',{},h('div',{class:'subject'},'Subject: '+p.subject),h('div',{class:'msg'},p.body),h('div',{class:'small',style:'margin-top:6px'},'to: '+(p.to||'—')+(p.pending_provider?'  (placeholder until provider approved)':''))):h('div',{class:'grid g2'},h('div',{},h('div',{class:'subject'},'Connection note (≤300 chars)'),h('div',{class:'msg'},p.note),h('button',{class:'btn',style:'margin-top:6px',onclick:()=>{navigator.clipboard.writeText(p.note);toast('note copied')}},'Copy note')),h('div',{},h('div',{class:'subject'},'DM after acceptance'),h('div',{class:'msg'},p.dm),h('div',{class:'row',style:'margin-top:6px'},h('button',{class:'btn',onclick:()=>{navigator.clipboard.writeText(p.dm);toast('DM copied')}},'Copy DM'),p.linkedin_url&&!p.linkedin_url.startsWith('pending')?h('a',{class:'btn',href:p.linkedin_url,target:'_blank',rel:'noopener'},'Open profile'):h('span',{class:'small'},'profile URL pending provider'),h('span',{class:'chip neutral'},'status: '+(p.manual_status||'queued')),h('button',{class:'btn good',onclick:async()=>{const r=await post('/api/pilot/manual',{batch_id:b.batch_id,contact_id:p.contact_id,status:'sent_by_hand'});toast(r.error||'logged as sent by hand');loadPilots()}},'I sent this by hand'),h('button',{class:'btn',onclick:async()=>{await post('/api/pilot/manual',{batch_id:b.batch_id,contact_id:p.contact_id,status:'skipped'});loadPilots()}},'Skip')))),
+   h('div',{class:'row',style:'margin-top:10px'},h('button',{class:'btn',onclick:()=>openLead(p.contact_id)},'Open lead (edit / approve there)'),h('button',{class:'btn good',onclick:async()=>{await post('/api/messages/review',{contact_id:p.contact_id,channel:isEmail?'cold_email':'linkedin_note',verdict:'approve'});toast('approved');loadPilots()}},'Approve'),h('button',{class:'btn danger',onclick:async()=>{const note=prompt('Reason')||'';await post('/api/messages/review',{contact_id:p.contact_id,channel:isEmail?'cold_email':'linkedin_note',verdict:'reject',note});loadPilots()}},'Reject'))));
+   const tr=h('tr',{class:'clickable',onclick:()=>det.hidden=!det.hidden},h('td',{class:'num'},String(i+1)),h('td',{},h('b',{},p.company),h('div',{class:'small'},p.role)),h('td',{},seg(p.segment)),h('td',{},p.country),h('td',{class:'num'},(p.priority??p.score)+' '+p.tier),h('td',{class:'small'},p.rationale),h('td',{},h('span',{class:'chip '+(p.review==='approve'?'good':p.review==='reject'?'crit':'neutral')},p.review)),h('td',{class:'small'},'▾ show message'));
+   tb.append(tr,det)});
+  tbl.append(tb);card.append(h('div',{class:'scroll',style:'margin-top:10px'},tbl));
+  card.append(h('div',{class:'row',style:'margin-top:12px'},isEmail?h('input',{id:'send-'+b.batch_id,placeholder:'type '+STATE.confirm_phrases.send,style:'width:220px'}):null,isEmail?h('button',{class:'btn danger',disabled:!ok,title:why.join(' · '),onclick:async()=>{const r=await post('/api/pilot/send',{batch_id:b.batch_id,confirm:$('#send-'+b.batch_id).value});toast(r.status+(r.reasons?': '+r.reasons.join('; '):''))}},'Send batch'):null,h('span',{class:'small'},ok?'all conditions met':'Blocked: '+why.join(' · '))));
+  box.append(card)}}
+async function loadJobs(){const js=await get('/api/jobs');const box=$('#jobList');box.innerHTML='';for(const j of js.sort((a,b)=>b.started.localeCompare(a.started)))box.append(h('div',{style:'padding:8px 0;border-bottom:1px solid var(--border)'},h('a',{href:'#',onclick:async e=>{e.preventDefault();const d=await get('/api/jobs?id='+j.id);$('#jobLog').textContent=d.cmd+'\n\n'+(d.tail||'(no output yet)')}},j.id),' ',h('span',{class:'chip '+(j.status==='done'?'good':j.status==='running'?'warn':'crit')},j.status)))}
+let STARTED=false;function start(){hideGate();if(STARTED)return;STARTED=true;refreshState();setInterval(refreshState,15000)}
+async function boot(){let ac;try{ac=await fetch(API+'/api/auth-config').then(r=>r.json())}catch(e){showGate('Cannot reach the pipeline API at '+(API||location.origin)+'.',0);return}
+ if(ac.mode!=='firebase'){start();return}
+ showGate('Sign in with a Google account that is on the admin list.',401);
+ const v='12.18.0';const[{initializeApp},A]=await Promise.all([import('https://www.gstatic.com/firebasejs/'+v+'/firebase-app.js'),import('https://www.gstatic.com/firebasejs/'+v+'/firebase-auth.js')]);
+ const auth=A.getAuth(initializeApp(ac.firebase,'pipeline-admin'));const out=e=>{if(e)e.preventDefault();A.signOut(auth).then(()=>location.reload())};
+ $('#gateBtn').onclick=()=>A.signInWithPopup(auth,new A.GoogleAuthProvider()).catch(e=>showGate(e.message,401));$('#signOut').onclick=out;$('#gateOut').onclick=out;
+ A.onAuthStateChanged(auth,async u=>{if(!u){TOKEN_FN=null;return}TOKEN_FN=()=>u.getIdToken();try{const me=await get('/api/whoami');$('#whoText').textContent=me.email;$('#whoChip').hidden=false;start()}catch(e){}})}
+boot();
+</script>
+</body>
+</html>
