@@ -20,10 +20,19 @@ header{position:sticky;top:0;z-index:20;background:rgba(13,16,20,.96);border-bot
 #tabs{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
 #tabs button{background:transparent;border:1px solid var(--border);color:var(--ink2);border-radius:999px;padding:8px 16px;font:inherit;font-size:15px;cursor:pointer}
 #tabs button[aria-selected=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
-.strip{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;border-bottom:1px solid var(--border);background:var(--surface)}
-@media (max-width:1000px){.strip{grid-template-columns:repeat(3,minmax(0,1fr))}.step{border-bottom:1px solid var(--border)}}
+.strip{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:0;border-bottom:1px solid var(--border);background:var(--surface)}
+@media (max-width:1100px){.strip{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:700px){.strip{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.step.cur{background:var(--surface2);box-shadow:inset 0 -3px 0 var(--accent)}.step.next .n{color:var(--accent)}
+.step .s{margin-top:6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--ink2)}
+.chip.next{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.stephead{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;margin:0 0 18px;padding:14px 18px;background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:12px}
+.stephead .do{font-size:17px;color:var(--ink);margin-top:2px;max-width:900px}.stephead .st{margin-top:8px}
+.stephead .nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+details.sub{margin-top:14px}details.sub>summary{cursor:pointer;font-weight:600;font-size:17px;padding:8px 0;color:var(--ink)}details.sub>summary .small{font-weight:400;margin-left:8px}
+#pilotList .act-only,#actList .review-only{display:none!important}
 @media (max-width:1100px){.action{grid-template-columns:1fr}}
-.step{padding:14px 18px;border-right:1px solid var(--border);cursor:pointer}.step:last-child{border-right:0}.step:hover{background:var(--surface2)}
+.step{padding:14px 18px;border:0;border-right:1px solid var(--border);border-bottom:1px solid var(--border);cursor:pointer;background:transparent;color:inherit;font:inherit;text-align:left;display:block;width:100%}.step:last-child{border-right:0}.step:hover{background:var(--surface2)}
 .step .n{font-size:26px;font-weight:700;letter-spacing:-.02em;font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace}
 .step .t{font-weight:600;color:var(--ink)}.step .d{font-size:13.5px;color:var(--muted);line-height:1.4;margin-top:2px}
 .step.off .n{color:var(--crit)}
@@ -79,67 +88,47 @@ iframe{width:100%;height:82vh;border:1px solid var(--border);border-radius:12px;
   <span class="mode" id="modeChip"><i></i><span id="modeText">loading</span></span>
   <span class="mode" id="whoChip" hidden><span id="whoText"></span>&nbsp;<a href="#" id="signOut">sign out</a></span>
   <span class="mode off" id="killChip"><i></i><span id="killText">sending disabled</span></span>
-  <nav id="tabs">
-    <button data-tab="overview" aria-selected="true">Overview</button><button data-tab="sources">Sources &amp; accounts</button><button data-tab="signals">Signals</button><button data-tab="leads">Leads</button>
-    <button data-tab="messages">Messages</button><button data-tab="pilot">Pilot</button><button data-tab="outcomes">Outcomes</button><button data-tab="simulation">Simulation</button><button data-tab="approvals">Approvals</button><button data-tab="logs">Logs</button>
-  </nav>
+  <nav id="tabs"><button data-tab="logs">Logs</button></nav>
 </header>
 <div class="strip" id="strip" hidden></div>
 <main hidden>
 
-<section id="overview">
-  <h2>Overview</h2><p class="lede">Where the latest run stands, the ten send gates, and the actions you can take. Every action below writes files on this machine only; nothing leaves it.</p>
+<section id="collect" hidden>
+  <div class="stephead" id="sh-collect"></div>
   <div class="grid g2">
     <div class="card">
-      <h3>Actions</h3>
-      <div class="action"><button class="btn" onclick="post('/api/sources/refresh',{}).then(r=>{toast('downloading registers, job '+r.job);pollJob(r.job)})">Download registers</button>
-        <div><div class="what">Fetch the public registers from the internet and rebuild the account list.</div><div class="how">Reads ESMA MiCA CSV, L2Beat API, NYDFS list, VARA register, ECB list into <code>data/real/</code>, then rebuilds <code>accounts.jsonl</code>. Needs network. About 1 minute. Does not contact anyone.</div></div></div>
-      <div class="action"><div><button class="btn primary" onclick="runPipeline('real')">Run pipeline on real accounts</button><div class="row" style="margin-top:8px"><label class="small">simulation trials <input id="trials" type="number" value="300"></label><label class="small"><input id="refreshAccounts" type="checkbox"> rebuild accounts first</label></div></div>
-        <div><div class="what">Score every account × role, decide the lawful channel per country, render and lint all messages, run the Monte Carlo simulation, evaluate the gates.</div><div class="how">Output goes to <code>out/run-…</code> and becomes "latest". Leads, Messages, Pilot and Simulation tabs all read from it. 30–60 seconds.</div></div></div>
-      <div class="action"><button class="btn" onclick="runPipeline('synthetic')">Run on synthetic test corpus</button>
-        <div><div class="what">Same pipeline on 2,600 invented contacts.</div><div class="how">Only for testing the mechanics. Names and companies are fake and clearly marked. Do not review messages from this mode.</div></div></div>
-      <div class="action"><button class="btn" onclick="post('/api/build-dashboard',{}).then(r=>{toast('rebuilding dashboard');pollJob(r.job)})">Rebuild dashboard</button>
-        <div><div class="what">Regenerate the charts page in the Simulation tab from the latest run.</div><div class="how">Runs automatically after each pipeline run; use this if the Simulation tab looks stale.</div></div></div>
+      <h3>Actions, in this order</h3>
+      <div class="action"><button class="btn" onclick="post('/api/sources/refresh',{}).then(r=>{toast('downloading registers, job '+r.job);pollJob(r.job)})">1a · Download registers</button>
+        <div><div class="what">Fetch the public registers and rebuild the account list.</div><div class="how">ESMA MiCA, L2Beat, NYDFS, VARA, ECB. About 1 minute. Contacts nobody.</div></div></div>
+      <div class="action"><div><button class="btn primary" onclick="runPipeline('real')">1b · Run pipeline on real accounts</button><div class="row" style="margin-top:8px"><label class="small">simulation trials <input id="trials" type="number" value="300"></label><label class="small"><input id="refreshAccounts" type="checkbox"> rebuild accounts first</label></div></div>
+        <div><div class="what">Score every account × role, pick the lawful channel per country, render and lint all messages, simulate, evaluate the gates.</div><div class="how">30–60 seconds. Steps 2–7 read from this run.</div></div></div>
+      <div class="action"><button class="btn" onclick="post('/api/signals/refresh',{}).then(()=>{toast('collecting signals from open sources; watch Logs');setTimeout(loadSignals,20000)})">1c · Collect signals (optional)</button>
+        <div><div class="what">Find people by what they do: forum posts, DAO budgets, incidents, job ads, code, papers.</div><div class="how">Open sources only. Run 1b again afterwards so the signals score the accounts.</div></div></div>
+      <div class="action"><button class="btn" onclick="runPipeline('synthetic')">Test run on invented data</button>
+        <div><div class="what">Same pipeline on 2,600 fake contacts, for checking mechanics only.</div><div class="how">Never review or send messages from a test run.</div></div></div>
+      <div class="action"><button class="btn" onclick="post('/api/build-dashboard',{}).then(r=>{toast('rebuilding dashboard');pollJob(r.job)})">Rebuild charts</button>
+        <div><div class="what">Regenerate the simulation charts shown in step 7.</div><div class="how">Runs by itself after each pipeline run.</div></div></div>
+      <div style="margin-top:12px"><span class="eyebrow">Recent jobs</span><div id="ovJobs" class="small"></div></div>
     </div>
     <div class="card"><h3>Latest run</h3><div class="grid g2" id="ovTiles"></div>
       <h3 style="margin-top:14px">Simulation at day 30 (target tier)</h3><p class="small">P50 and P10–P90 per scenario; P(hit) is the chance of reaching 10 or more.</p><div class="scroll" id="ovSim"></div></div>
   </div>
-  <div class="card" style="margin-top:14px"><h3>Send gates <span class="small" id="gateSummary"></span></h3><p class="small">All ten must pass, and sending must be enabled in Approvals, before the Send button in Pilot does anything.</p><div id="ovGates"></div></div>
-  <div class="card" style="margin-top:14px"><h3>Recent jobs</h3><div id="ovJobs" class="small"></div></div>
-</section>
-
-<section id="sources" hidden>
-  <h2>Sources &amp; accounts</h2>
-  <p class="lede"><b>Source</b> = a public register or directory we read (a licence list, L2Beat, a grants list). <b>Account</b> = a company found in a source, with its facts. Accounts become <b>Leads</b> in the next tab once a decision-maker role is attached and scored. Providers stay blocked until approved.</p>
-  <div class="row" style="margin-bottom:10px"><span class="small" id="srcTotal"></span></div>
-  <div class="card scroll"><table id="srcTable"></table></div>
-  <div class="grid g2" style="margin-top:14px">
-    <div class="card"><h3>People: replace placeholders</h3><p class="small">Paste CSV with columns <code>company,role,first_name,last_name,email,verified,linkedin_url,country,note</code> (or <code>lead_id</code> instead of company+role). Takes effect on the next pipeline run.</p><textarea id="csvPeople" style="min-height:120px" placeholder="company,role,first_name,last_name,email,verified&#10;Lighter,cto,Jane,Doe,jane@lighter.example,yes"></textarea><div class="row" style="margin-top:8px"><button class="btn primary" onclick="importPeople()">Import people</button><span class="small" id="csvResult"></span></div></div>
-    <div class="card"><h3>Warm paths and events</h3><p class="small">The simulation says these carry the number. Add a name here and the next run routes that account through the warm channel.</p>
-      <div class="row"><input id="warmAcc" placeholder="account name (substring)"><input id="warmWho" placeholder="connector, e.g. TU Munich / Quantstamp alum"><input id="warmNote" placeholder="note"><button class="btn" onclick="addWarm()">Add warm path</button></div>
-      <div class="row" style="margin-top:8px"><input id="evAcc" placeholder="account name (substring)"><input id="evName" placeholder="event, e.g. Money20/20 ME"><input id="evNote" placeholder="note"><button class="btn" onclick="addEvent()">Log event conversation</button></div>
-      <div id="warmList" class="small" style="margin-top:8px"></div></div>
-  </div>
-  <div class="card" style="margin-top:14px"><h3>Suppression (do-not-contact)</h3><div class="row"><input id="supVal" placeholder="e-mail or domain"><select id="supType"><option value="email">email</option><option value="domain">domain</option></select><button class="btn" onclick="addSup()">Add</button></div><div id="supList" class="small" style="margin-top:8px"></div></div>
-  <div class="card" style="margin-top:14px"><h3>Accounts</h3><div class="row"><input id="accQ" placeholder="search company" oninput="loadAccounts()"><select id="accRegion" onchange="loadAccounts()"><option value="">all regions</option><option>EU</option><option>US</option><option>MENA</option><option value="??">unknown</option></select><span class="small" id="accTotal"></span></div><div class="scroll" style="margin-top:8px"><table id="accTable"></table></div></div>
-</section>
-
-<section id="signals" hidden>
-  <h2>Signals: people found by what they do, not by their title</h2>
-  <p class="lede">A <b>lens</b> is a behaviour that reveals the problem we solve: someone writing publicly about post-quantum migration or prover soundness, a DAO voting an audit budget, a protocol that just lost funds to a forged proof, a company advertising a cryptography role, an org shipping PQ code. Each row is one observed fact with its evidence link. A signal that matches an account raises that account's score; a signal from a person we cannot place becomes its own lead whose only channel is a public reply in the thread they started, which is lawful everywhere.</p>
-  <div class="row" style="margin-bottom:10px">
-    <select id="sigLens" onchange="loadSignals()"><option value="">all lenses</option></select>
-    <input id="sigQ" placeholder="search text, person, entity" oninput="loadSignals()" style="width:260px">
-    <span class="small" id="sigTotal"></span>
-    <button class="btn" style="margin-left:auto" onclick="refreshSignals()">Collect signals now (live, open sources only)</button>
-  </div>
-  <div class="grid g4" id="sigLensCards" style="margin-bottom:12px"></div>
-  <div class="card scroll"><table id="sigTable"></table></div>
+  <details class="sub"><summary>Sources and accounts <span class="small" id="srcTotal"></span></summary>
+    <p class="small"><b>Source</b> = a public register or directory we read. <b>Account</b> = a company found there. Accounts become leads in step 2 once a decision-maker role is attached and scored. Providers stay blocked until approved.</p>
+    <div class="card scroll"><table id="srcTable"></table></div>
+    <div class="card" style="margin-top:14px"><div class="row"><input id="accQ" placeholder="search company" oninput="loadAccounts()"><select id="accRegion" onchange="loadAccounts()"><option value="">all regions</option><option>EU</option><option>US</option><option>MENA</option><option value="??">unknown</option></select><span class="small" id="accTotal"></span></div><div class="scroll" style="margin-top:8px"><table id="accTable"></table></div></div>
+  </details>
+  <details class="sub"><summary>Signals: people found by what they do <span class="small" id="sigTotal"></span></summary>
+    <p class="small">Each row is one observed fact with its evidence link. A signal that matches an account raises its score; a signal from a person we cannot place becomes its own lead, reachable by a public reply in their thread.</p>
+    <div class="row" style="margin-bottom:10px"><select id="sigLens" onchange="loadSignals()"><option value="">all lenses</option></select><input id="sigQ" placeholder="search text, person, entity" oninput="loadSignals()" style="width:260px"></div>
+    <div class="grid g4" id="sigLensCards" style="margin-bottom:12px"></div>
+    <div class="card scroll"><table id="sigTable"></table></div>
+  </details>
 </section>
 
 <section id="leads" hidden>
-  <h2>Leads</h2>
-  <p class="lede"><b>Lead</b> = one decision-maker role at an account (CTO, CISO, Head of Protocol…) that scores 60 or more on the ICP model and has at least one lawful channel in its country. Until a contact-data provider is approved the person is a placeholder shown as <span class="pill">[pending]</span>; the company, role, score and channel are real. Click a row to see why it scored, the law for its country, and its messages.</p>
+  <div class="stephead" id="sh-leads"></div>
+  <p class="small"><b>Lead</b> = one decision-maker role at an account, scored ≥ 60 with a lawful channel in its country. Priority = fit × winnability. A person shown as <span class="pill">[pending]</span> is a placeholder: click the row and enter the real person, or import a CSV below. Signal-author leads already carry a public name.</p>
   <div class="row" style="margin-bottom:10px">
     <input id="leadQ" placeholder="search company or role" oninput="loadLeads()" style="width:240px">
     <select id="leadRegion" onchange="loadLeads()"><option value="">all regions</option><option>EU</option><option>US</option><option>MENA</option></select>
@@ -151,17 +140,27 @@ iframe{width:100%;height:82vh;border:1px solid var(--border);border-radius:12px;
   </div>
   <div class="card scroll"><table id="leadTable"></table></div>
   <div class="pager"><button class="btn" onclick="leadPage(-1)">Previous</button><span class="small" id="leadPage">page 1</span><button class="btn" onclick="leadPage(1)">Next</button></div>
+  <details class="sub"><summary>Import people from CSV</summary>
+    <div class="card"><p class="small">Columns <code>company,role,first_name,last_name,email,verified,linkedin_url,country,note</code> (or <code>lead_id</code> instead of company+role). Takes effect on the next run of step 1b.</p><textarea id="csvPeople" style="min-height:120px" placeholder="company,role,first_name,last_name,email,verified&#10;Lighter,cto,Jane,Doe,jane@lighter.example,yes"></textarea><div class="row" style="margin-top:8px"><button class="btn primary" onclick="importPeople()">Import people</button><span class="small" id="csvResult"></span></div></div>
+  </details>
+  <details class="sub"><summary>Warm paths and event conversations <span class="small">(the simulation says these carry the number)</span></summary>
+    <div class="card"><div class="row"><input id="warmAcc" placeholder="account name (substring)"><input id="warmWho" placeholder="connector, e.g. TU Munich / Quantstamp alum"><input id="warmNote" placeholder="note"><button class="btn" onclick="addWarm()">Add warm path</button></div>
+      <div class="row" style="margin-top:8px"><input id="evAcc" placeholder="account name (substring)"><input id="evName" placeholder="event, e.g. Money20/20 ME"><input id="evNote" placeholder="note"><button class="btn" onclick="addEvent()">Log event conversation</button></div>
+      <div id="warmList" class="small" style="margin-top:8px"></div></div>
+  </details>
+  <details class="sub"><summary>Do-not-contact list</summary>
+    <div class="card"><div class="row"><input id="supVal" placeholder="e-mail or domain"><select id="supType"><option value="email">email</option><option value="domain">domain</option></select><button class="btn" onclick="addSup()">Add</button></div><div id="supList" class="small" style="margin-top:8px"></div></div>
+  </details>
 </section>
 
 <section id="messages" hidden>
-  <h2>Messages</h2>
-  <p class="lede">Every message rendered in the latest run, exactly as it would go out, best-scored lead first. Edit the text in place (it is re-checked by the claims linter and any earlier approval is cleared), then approve or reject. Only approved, lint-clean messages can be sent from a pilot.</p>
+  <div class="stephead" id="sh-messages"></div>
   <div class="row" style="margin-bottom:10px">
     <input id="msgQ" placeholder="search company or text" oninput="loadMsgs(0)" style="width:240px">
     <select id="msgRegion" onchange="loadMsgs(0)"><option value="">all regions</option><option>EU</option><option>US</option><option>MENA</option></select>
     <select id="msgSegment" onchange="loadMsgs(0)"><option value="">all segments</option><option value="S1_GCC_INSTITUTIONAL">S1</option><option value="S2_AI_AGENT_ENTERPRISE">S2</option><option value="S3_EU_REGULATED_MIDMARKET">S3</option><option value="S4_WEB3_RWA">S4</option><option value="S5_PQ_MANDATE">S5</option></select>
-    <select id="msgChannel" onchange="loadMsgs(0)"><option value="cold_email">cold email</option><option value="linkedin_note">LinkedIn note</option><option value="linkedin_dm">LinkedIn DM</option><option value="">all channels</option></select>
-    <select id="msgReview" onchange="loadMsgs(0)"><option value="">any review state</option><option value="unreviewed">unreviewed</option><option value="approve">approved</option><option value="reject">rejected</option></select>
+    <select id="msgChannel" onchange="loadMsgs(0)"><option value="cold_email">cold email</option><option value="linkedin_note">LinkedIn note</option><option value="linkedin_dm">LinkedIn DM</option><option value="public_reply">public reply</option><option value="">all channels</option></select>
+    <select id="msgReview" onchange="loadMsgs(0)"><option value="unreviewed">unreviewed</option><option value="">any review state</option><option value="approve">approved</option><option value="reject">rejected</option></select>
     <span class="small" id="msgTotal"></span>
   </div>
   <div id="msgList" class="grid g2"></div>
@@ -169,45 +168,51 @@ iframe{width:100%;height:82vh;border:1px solid var(--border);border-radius:12px;
 </section>
 
 <section id="pilot" hidden>
-  <h2>Pilot</h2>
-  <p class="lede">A pilot is a batch of up to 50 messages you review one by one before anything is sent. Email batches are written to an outbox on disk. LinkedIn batches are never sent by software: the console prepares the note and the DM, you send them by hand from your own account, and log it here.</p>
-  <div class="card"><h3>How the batch is chosen</h3><div class="callout" id="pilotRule"></div></div>
-  <div class="card" style="margin-top:14px"><div class="row">
+  <div class="stephead" id="sh-pilot"></div>
+  <div class="card"><div class="row">
     <label class="small">batch size <input id="pilotN" type="number" value="50"></label>
     <label class="small">regions <input id="pilotRegions" value="US,EU" style="width:110px"></label>
-    <label class="small">channel <select id="pilotChannel"><option value="cold_email">cold email</option><option value="linkedin">LinkedIn (assisted manual)</option><option value="public_reply">public reply in their thread</option></select></label>
+    <label class="small">channel <select id="pilotChannel"><option value="cold_email">cold email</option><option value="linkedin">LinkedIn (you send, by hand or local agent)</option><option value="public_reply">public reply in their thread</option></select></label>
     <button class="btn primary" onclick="buildPilot()">Build batch</button>
-    <span class="small">Building only writes a file; it does not send.</span></div></div>
-  <div class="card" style="margin-top:14px"><h3>Transports</h3><div id="transportsBox" class="small">loading…</div></div>
-  <div class="card" style="margin-top:14px"><h3>Follow-ups due</h3><p class="small">Touch 2 goes four days after touch 1, touch 3 five days after touch 2, and only while nobody has replied, bounced or opted out. Marking a message as sent by hand starts the clock.</p><div id="followupList"></div></div>
+    <span class="small">Building only writes a file. Nothing is sent.</span></div>
+    <div class="callout" id="pilotRule" style="margin-top:10px"></div></div>
   <div id="pilotList" style="margin-top:14px"></div>
 </section>
 
-<section id="outcomes" hidden>
-  <h2>Outcomes</h2>
-  <p class="lede">What actually happened, per lead, against what the simulation predicted. Log every step from the lead drawer or the pilot rows; unsubscribes and bounces go straight to the suppression list.</p>
+<section id="gates" hidden>
+  <div class="stephead" id="sh-gates"></div>
+  <div class="grid g2">
+    <div class="card"><h3>Sign-offs <span class="small">(you record what you have actually done)</span></h3><table id="apprTable"></table></div>
+    <div class="card"><h3>Kill switch</h3><p class="small">Tool sending stays off until every gate passes and you enable it here with the phrase <code id="phraseEnable"></code>. Sending by hand and the local agent do not need this.</p>
+      <div class="row"><input id="enablePhrase" placeholder="type the phrase" style="width:260px"><button class="btn danger" onclick="setSending(true)">Enable sending</button><button class="btn" onclick="setSending(false)">Disable sending</button></div></div>
+  </div>
+  <div class="card" style="margin-top:14px"><h3>The ten gates <span class="small" id="gateSummary"></span></h3><div id="ovGates"></div></div>
+</section>
+
+<section id="act" hidden>
+  <div class="stephead" id="sh-act"></div>
+  <div class="card"><h3>Ways to send</h3><div id="transportsBox" class="small">loading…</div></div>
+  <div class="card" style="margin-top:14px"><h3>Follow-ups due <span class="small">(touch 2 four days after touch 1, touch 3 five days later, unless they replied)</span></h3><div id="followupList"></div></div>
+  <div id="actList" style="margin-top:14px"></div>
+</section>
+
+<section id="track" hidden>
+  <div class="stephead" id="sh-track"></div>
   <div class="grid g2">
     <div class="card"><h3>Funnel: actual vs simulated</h3><div id="funnelTable"></div></div>
     <div class="card"><h3>Inbound enquiries (website form)</h3><div id="inboundList" class="small">loading…</div></div>
   </div>
-  <div class="card" style="margin-top:14px"><h3>Lead timeline</h3><div class="scroll"><table id="outcomeTable"></table></div></div>
-</section>
-
-<section id="simulation" hidden>
-  <div class="card" id="ablationCard" style="margin-bottom:14px"><h3>Strategy evidence (scenario E, no warm intros)</h3><p class="small">Removing a channel from the mix costs this many qualified opportunities. Generated by <code>scripts/ablation.py</code>; re-run after every pipeline run.</p><div id="ablation" class="scroll"></div></div>
-  <h2>Simulation</h2><p class="lede">The full dashboard for the latest run: funnel, scenarios, sensitivity, reach and law, sources, buyer panel, gates.</p>
-  <iframe id="dashFrame" title="Simulation dashboard" sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>
-</section>
-
-<section id="approvals" hidden>
-  <h2>Approvals</h2><p class="lede">Manual sign-offs that the gates check. Each toggle records who and when. Enabling sending is the last step and needs the confirmation phrase.</p>
-  <div class="card"><table id="apprTable"></table></div>
-  <div class="card" style="margin-top:14px"><h3>Kill switch</h3><p class="small">Sending stays disabled until every gate passes and this is enabled with the phrase <code id="phraseEnable"></code>. It also blocks logging LinkedIn items as sent.</p>
-    <div class="row"><input id="enablePhrase" placeholder="type the phrase" style="width:260px"><button class="btn danger" onclick="setSending(true)">Enable sending</button><button class="btn" onclick="setSending(false)">Disable sending</button></div></div>
+  <div class="card" style="margin-top:14px"><h3>Lead timeline <span class="small">(click a row to log the next outcome)</span></h3><div class="scroll"><table id="outcomeTable"></table></div></div>
+  <details class="sub"><summary>Strategy evidence: what each channel is worth</summary>
+    <div class="card" id="ablationCard"><p class="small">Removing a channel from the mix costs this many qualified opportunities (scenario E, no warm intros).</p><div id="ablation" class="scroll"></div></div>
+  </details>
+  <details class="sub"><summary>Full simulation dashboard</summary>
+    <iframe id="dashFrame" title="Simulation dashboard" sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>
+  </details>
 </section>
 
 <section id="logs" hidden>
-  <h2>Logs</h2><p class="lede">Output of every job started from this console. Click a job to read its log.</p>
+  <h2>Logs</h2><p class="small">Output of every job started from this console. Click a job to read its log.</p>
   <div class="grid g2"><div class="card" id="jobList"></div><div class="card"><div class="log" id="jobLog">select a job</div></div></div>
 </section>
 </main>
@@ -232,16 +237,39 @@ const f0=n=>Math.round(n??0).toLocaleString();const pc=n=>Math.round((n??0)*100)
 const SEG={S1_GCC_INSTITUTIONAL:'S1 GCC institutional',S2_AI_AGENT_ENTERPRISE:'S2 AI-agent enterprise',S3_EU_REGULATED_MIDMARKET:'S3 EU regulated',S4_WEB3_RWA:'S4 Web3 / RWA',S5_PQ_MANDATE:'S5 post-quantum'};
 const seg=s=>SEG[s]||s||'';
 let STATE={},LEAD_OFF=0,MSG_OFF=0;
-function showTab(t){document.querySelectorAll('#tabs button').forEach(x=>x.setAttribute('aria-selected',String(x.dataset.tab===t)));document.querySelectorAll('main > section').forEach(s=>s.hidden=s.id!==t);if(t==='signals')loadSignals();if(t==='outcomes')loadOutcomes();if(t==='sources'){loadWarm();loadSup()}
- if(t==='sources')loadSources();if(t==='leads')loadLeads();if(t==='messages')loadMsgs(0);if(t==='approvals')loadApprovals();if(t==='pilot'){loadPilots();loadFollowups();loadTransports()}if(t==='logs')loadJobs();if(t==='simulation'){loadDash();renderAblation()}}
+const STEPS=[
+ {id:'collect',t:'Collect',do:'Download the registers (1a), then run the pipeline (1b). Every later step reads from that run.'},
+ {id:'leads',t:'Review leads',do:'Exclude the wrong ones. For each lead you will contact, click it and enter the real person; signal authors already have a name.'},
+ {id:'messages',t:'Review messages',do:'Read each message, edit if needed, then Approve or Reject. Only approved, lint-clean messages can go into a pilot.'},
+ {id:'pilot',t:'Build the pilot',do:'Pick channel, size and regions, click Build batch, then approve or reject each picked item.'},
+ {id:'gates',t:'Clear the gates',do:'Sign off what you have actually done. All ten gates must pass before the tool sends anything. Sending by hand is not blocked here.'},
+ {id:'act',t:'Send',do:'Per item: copy or open in your mail app, send, then click "I sent this by hand". Or download the batch for the local agent. "Send batch" works only once step 5 is clear and sending is enabled.'},
+ {id:'track',t:'Track',do:'Log every reply, meeting and result from the lead drawer. Import agent results in step 6. Do follow-ups when they come due.'}];
+function stepStates(){const c=STATE.counts||{},r=STATE.run||{},g=STATE.gates||{},on=!!(STATE.approvals||{}).sending_enabled;const S=STATE.steps||{collect:{leads:c.leads},leads:{placeholders:c.leads,people:0,excluded:0},messages:{total:c.messages,approved:0,rejected:0,unreviewed:c.messages,lint_fail:(r.summary||{}).lint_failures||0},pilot:{batches:c.pilots,items:0,approved:0,placeholders:0},act:{sent:c.sent,ready:0,queued:0,skipped:0},track:{contacted:c.sent,replies:0,meetings:0,qualified:0,due:0,overdue:0}};const x=k=>S[k]||{};const out=[];
+ const col=x('collect');out.push(r.corpus==='real'&&col.leads>0?['done',f0(c.accounts)+' accounts → '+f0(col.leads)+' leads · run '+(r.generated_at||'').slice(0,10)]:r.corpus?['todo','last run used the invented test corpus: run 1b on real accounts']:['todo','no run yet']);
+ const ld=x('leads'),named=(col.leads||0)-(ld.placeholders||0);out.push(ld.people>0?['done',ld.people+' people entered · '+named+' with a public name · '+ld.excluded+' excluded']:named>0?['partial','0 people entered · '+named+' leads already carry a public name · '+f0(ld.placeholders)+' placeholders']:['todo','0 people entered · every lead is a placeholder']);
+ const m=x('messages');out.push(m.approved>0?['done',m.approved+' approved · '+m.rejected+' rejected · '+f0(m.unreviewed)+' unreviewed · '+m.lint_fail+' lint failures']:['todo',f0(m.total)+' rendered · none approved yet']);
+ const pl=x('pilot');out.push(pl.batches>0&&pl.approved>0?['done',pl.batches+' batches · '+pl.approved+' of '+pl.items+' approved · '+pl.placeholders+' placeholders']:pl.batches>0?['partial',pl.batches+' built · no item approved yet']:['todo','no batch built']);
+ out.push((g.passed??0)===(g.total??10)?['done',g.passed+' of '+g.total+' pass · sending '+(on?'ENABLED':'off')]:['partial',(g.passed??0)+' of '+(g.total??10)+' gates pass · '+(c.approvals||'')+' sign-offs · sending '+(on?'ENABLED':'off')]);
+ const a=x('act');out.push(a.sent>0?['done',a.sent+' sent · '+a.ready+' ready · '+a.skipped+' skipped']:a.ready>0?['todo',a.ready+' ready to send · '+a.queued+' queued']:['blocked','nothing ready: an item needs a real person (2) and an approval (4)']);
+ const t=x('track');out.push(t.contacted>0?[(t.replies>0||t.meetings>0?'done':'partial'),t.contacted+' contacted · '+t.replies+' replies · '+t.meetings+' meetings · '+t.qualified+' qualified · '+t.due+' follow-ups due'+(t.overdue?' ('+t.overdue+' overdue)':'')]:['todo','nothing to track until something is sent in step 6']);
+ return out.map(([status,line])=>({status,line}))}
+const CHIP={done:['good','done'],partial:['warn','partly'],todo:['neutral','to do'],blocked:['crit','blocked']};
+let CUR='',NEXT=0;
+function renderStepper(){const st=stepStates();NEXT=st.findIndex(s=>s.status!=='done');if(NEXT<0)NEXT=STEPS.length-1;const box=$('#strip');box.innerHTML='';
+ STEPS.forEach((sp,i)=>{const s=st[i],[cls,lbl]=CHIP[s.status];box.append(h('button',{class:'step'+(CUR===sp.id?' cur':'')+(i===NEXT?' next':''),onclick:()=>showTab(sp.id),'aria-current':CUR===sp.id?'step':null},h('div',{class:'n'},String(i+1)),h('div',{class:'t'},sp.t),h('div',{class:'s'},h('span',{class:'chip '+cls},lbl),i===NEXT?h('span',{class:'chip next'},'NEXT'):null),h('div',{class:'d'},s.line)))});
+ STEPS.forEach((sp,i)=>{const el=$('#sh-'+sp.id);if(!el)return;const s=st[i],[cls,lbl]=CHIP[s.status];el.innerHTML='';const prev=STEPS[i-1],next=STEPS[i+1];
+  el.append(h('div',{},h('div',{class:'eyebrow'},'Step '+(i+1)+' of '+STEPS.length+(i===NEXT?' · your next step':'')),h('h2',{},sp.t),h('div',{class:'do'},'Do this: '+sp.do),h('div',{class:'st row'},h('span',{class:'chip '+cls},lbl),h('span',{class:'small'},s.line))),
+   h('div',{class:'nav'},prev?h('button',{class:'btn',onclick:()=>showTab(prev.id)},'← '+i+' '+prev.t):null,next?h('button',{class:'btn primary',onclick:()=>showTab(next.id)},'Next: '+(i+2)+' '+next.t+' →'):null))})}
+function showTab(t){if(!document.getElementById(t))t=STEPS[NEXT].id;CUR=t;try{history.replaceState(null,'','#'+t)}catch(e){}document.querySelectorAll('#tabs button').forEach(x=>x.setAttribute('aria-selected',String(x.dataset.tab===t)));document.querySelectorAll('main > section').forEach(s=>s.hidden=s.id!==t);document.querySelectorAll('#strip .step').forEach((b,i)=>b.classList.toggle('cur',STEPS[i].id===t));window.scrollTo(0,0);
+ if(t==='collect'){loadSources();loadSignals()}if(t==='leads'){loadLeads();loadWarm();loadSup()}if(t==='messages')loadMsgs(0);if(t==='pilot')loadPilots('review');if(t==='gates')loadApprovals();if(t==='act'){loadPilots('act');loadFollowups();loadTransports()}if(t==='track'){loadOutcomes();loadDash();renderAblation()}if(t==='logs')loadJobs()}
 document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
 
 async function refreshState(){STATE=await get('/api/state');const r=STATE.run||{},c=STATE.counts||{};
  $('#modeText').textContent=(r.corpus==='real'?'real accounts':r.corpus||'no run')+' · '+(c.sent||0)+' sent';
  $('#killChip').className='mode '+(STATE.approvals.sending_enabled?'':'off');$('#killText').textContent=STATE.approvals.sending_enabled?'SENDING ENABLED':'sending disabled (kill switch)';
  $('#phraseEnable').textContent=STATE.confirm_phrases.enable;$('#pilotRule').textContent=STATE.pilot_rule||'';
- const steps=[['sources',c.sources,'Sources','public registers we read'],['sources',c.accounts,'Accounts','companies found in them'],['leads',c.leads,'Leads','account × role, scored ≥ 60, lawful channel'],['messages',c.messages,'Messages','rendered and linted'],['pilot',c.pilots,'Pilot batches','built for your review'],['outcomes',c.sent,'Sent','by hand, logged · tool sends '+(c.sent_by_tool||0)]];
- const st=$('#strip');st.innerHTML='';steps.forEach(([tab,n,t,d],i)=>st.append(h('div',{class:'step'+(i===5?' off':''),onclick:()=>showTab(tab)},h('div',{class:'n'},f0(n)),h('div',{class:'t'},t),h('div',{class:'d'},d))));
+ renderStepper();
  const s=r.summary||{},t=r.targets||{};const tiles=[['Run',r.generated_at?r.generated_at.replace('T',' ').slice(0,16):'none',r.mode||''],['Leads',f0(s.leads),'target '+f0(t.leads_target)+' · '+f0(s.tier_a)+' tier A'],['ICP-fit but consent-only',f0((r.icp_fit_no_channel||{}).consent_required),'need a warm intro or event'],['Messages',f0(s.messages_rendered),f0(s.lint_failures)+' lint failures']];
  const box=$('#ovTiles');box.innerHTML='';for(const[a,b,cc]of tiles)box.append(h('div',{},h('div',{class:'eyebrow'},a),h('div',{class:'val'},b),h('div',{class:'small'},cc)));
  const g=$('#ovGates');g.innerHTML='';$('#gateSummary').textContent=(STATE.gates.passed??0)+' of '+(STATE.gates.total??10)+' pass · send allowed: '+String(!!STATE.gates.send_allowed);
@@ -334,22 +362,23 @@ async function loadApprovals(){const a=(await get('/api/state')).approvals;const
 async function setSending(on){const r=await post('/api/approvals',{key:'sending_enabled',value:on,confirm:$('#enablePhrase').value});toast(r.error||(on?'sending ENABLED':'sending disabled'));setTimeout(refreshState,2500)}
 
 async function buildPilot(){const regions=$('#pilotRegions').value.split(',').map(s=>s.trim()).filter(Boolean);const b=await post('/api/pilot/build',{n:+$('#pilotN').value,regions,channel:$('#pilotChannel').value});toast(b.error||('batch '+b.batch_id+': '+b.n+' picked from '+b.candidates_considered+' candidates'));loadPilots()}
-async function loadPilots(){const ps=await get('/api/pilots');const box=$('#pilotList');box.innerHTML='';const chk=STATE.gate_check||{};if(!ps.length)box.append(h('div',{class:'card'},'No batch yet. Choose size, regions and channel above and click Build batch.'));
+let PILOT_MODE='review';const canAct=p=>p.review==='approve'&&!p.pending_provider;const actWhy=p=>p.pending_provider?'enter a real person first (step 2)':p.review!=='approve'?'approve this item in step 4 first':'';
+async function loadPilots(mode){PILOT_MODE=mode||PILOT_MODE;const ps=await get('/api/pilots');const box=$(PILOT_MODE==='act'?'#actList':'#pilotList');box.innerHTML='';const chk=STATE.gate_check||{};if(!ps.length)box.append(h('div',{class:'card'},PILOT_MODE==='act'?'No batch to send. Build one in step 4.':'No batch yet. Choose size, regions and channel above and click Build batch.'));
  for(const b of ps){const isEmail=b.channel==='cold_email';const isReply=b.channel==='public_reply';const why=[];if(!chk.gates_pass)why.push('gates failing: '+(chk.failing||[]).join(', '));if(!chk.sending_enabled)why.push('kill switch is on');if(b.approved!==b.n)why.push((b.n-b.approved)+' of '+b.n+' not yet approved');if(b.pending_provider)why.push(b.pending_provider+' recipients are placeholders');if(!isEmail)why.push((isReply?'Public replies':'LinkedIn')+' are posted by hand, never by the tool');const ok=!why.length;
   const card=h('div',{class:'card',style:'margin-bottom:14px'});
   card.append(h('div',{class:'row'},h('h3',{style:'margin:0'},b.batch_id),h('span',{class:'chip neutral'},isEmail?'cold email':isReply?'public replies (by hand)':'LinkedIn assisted manual'),h('span',{class:'chip neutral'},b.n+' picked of '+(b.candidates_considered??'?')+' candidates'),h('span',{class:'chip '+(b.approved===b.n&&b.n?'good':'warn')},b.approved+' / '+b.n+' approved'),h('span',{class:'chip '+(b.pending_provider?'warn':'good')},b.pending_provider+' pending provider'),h('span',{class:'small'},'regions '+(b.regions||[]).join(', ')+' · per segment '+Object.entries(b.per_segment||{}).map(([k,v])=>k.split('_')[0]+' '+v).join(', '))));
-  if(b.outbox)card.append(h('p',{class:'small'},'Outbox on disk: '+b.outbox+' · ',h('a',{href:API+'/api/pilot/mbox?batch_id='+encodeURIComponent(b.batch_id),onclick:async e=>{e.preventDefault();const r=await call('/api/pilot/mbox?batch_id='+encodeURIComponent(b.batch_id));const blob=await r.blob();const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=b.batch_id+'.mbox';a.click()}},'download .mbox for your mail client')));
+  if(b.outbox)card.append(h('p',{class:'small act-only'},'Outbox on disk: '+b.outbox+' · ',h('a',{href:API+'/api/pilot/mbox?batch_id='+encodeURIComponent(b.batch_id),onclick:async e=>{e.preventDefault();const r=await call('/api/pilot/mbox?batch_id='+encodeURIComponent(b.batch_id));const blob=await r.blob();const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=b.batch_id+'.mbox';a.click()}},'download .mbox for your mail client')));
   const tbl=h('table',{});tbl.append(h('thead',{},h('tr',{},...['#','Company · role','Segment','Country','Priority','Why picked','Review',''].map(x=>h('th',{},x)))));const tb=h('tbody');
-  b.messages.forEach((p,i)=>{const det=h('tr',{hidden:true},h('td',{colspan:8},isEmail?h('div',{},h('div',{class:'subject'},'Subject: '+p.subject),h('div',{class:'msg'},p.body),h('div',{class:'small',style:'margin-top:6px'},'to: '+(p.to||'—')+(p.pending_provider?'  (placeholder: enter the person in the lead drawer)':'')),h('div',{class:'row',style:'margin-top:6px'},h('button',{class:'btn',onclick:()=>copyText('Subject: '+p.subject+'\n\n'+p.body,'e-mail copied')},'Copy e-mail'),h('a',{class:'btn',href:mailtoFor(p)},'Open in mail app'),h('span',{class:'chip neutral'},'status: '+(p.manual_status||'queued')),h('button',{class:'btn good',disabled:p.pending_provider,title:p.pending_provider?'enter a real person first':'',onclick:async()=>{const r=await post('/api/pilot/manual',{batch_id:b.batch_id,contact_id:p.contact_id,status:'sent_by_hand'});toast(r.error||'logged as sent by hand (touch 1)');loadPilots()}},'I sent this by hand'),h('button',{class:'btn',onclick:async()=>{await post('/api/pilot/manual',{batch_id:b.batch_id,contact_id:p.contact_id,status:'skipped'});loadPilots()}},'Skip'))):b.channel==='public_reply'?h('div',{},h('div',{class:'subject'},'Reply in their thread'),h('div',{class:'msg'},p.reply),h('div',{class:'row',style:'margin-top:6px'},h('button',{class:'btn',onclick:()=>copyText(p.reply,'reply copied')},'Copy reply'),p.thread_url?h('a',{class:'btn',href:p.thread_url,target:'_blank',rel:'noopener'},'Open thread'):null,h('span',{class:'chip neutral'},'status: '+(p.manual_status||'queued')),h('button',{class:'btn good',onclick:async()=>{const r=await post('/api/pilot/manual',{batch_id:b.batch_id,contact_id:p.contact_id,status:'sent_by_hand'});toast(r.error||'logged as posted');loadPilots()}},'I posted this'),h('button',{class:'btn',onclick:async()=>{await post('/api/pilot/manual',{batch_id:b.batch_id,contact_id:p.contact_id,status:'skipped'});loadPilots()}},'Skip'))):h('div',{class:'grid g2'},h('div',{},h('div',{class:'subject'},'Connection note (≤300 chars)'),h('div',{class:'msg'},p.note),h('button',{class:'btn',style:'margin-top:6px',onclick:()=>{navigator.clipboard.writeText(p.note);toast('note copied')}},'Copy note')),h('div',{},h('div',{class:'subject'},'DM after acceptance'),h('div',{class:'msg'},p.dm),h('div',{class:'row',style:'margin-top:6px'},h('button',{class:'btn',onclick:()=>{navigator.clipboard.writeText(p.dm);toast('DM copied')}},'Copy DM'),p.linkedin_url&&!p.linkedin_url.startsWith('pending')?h('a',{class:'btn',href:p.linkedin_url,target:'_blank',rel:'noopener'},'Open profile'):h('span',{class:'small'},'profile URL pending provider'),h('span',{class:'chip neutral'},'status: '+(p.manual_status||'queued')),h('button',{class:'btn good',onclick:async()=>{const r=await post('/api/pilot/manual',{batch_id:b.batch_id,contact_id:p.contact_id,status:'sent_by_hand'});toast(r.error||'logged as sent by hand');loadPilots()}},'I sent this by hand'),h('button',{class:'btn',onclick:async()=>{await post('/api/pilot/manual',{batch_id:b.batch_id,contact_id:p.contact_id,status:'skipped'});loadPilots()}},'Skip')))),
-   h('div',{class:'row',style:'margin-top:10px'},h('button',{class:'btn',onclick:()=>openLead(p.contact_id)},'Open lead (edit / approve there)'),h('button',{class:'btn good',onclick:async()=>{await post('/api/messages/review',{contact_id:p.contact_id,channel:isEmail?'cold_email':isReply?'public_reply':'linkedin_note',verdict:'approve'});toast('approved');loadPilots()}},'Approve'),h('button',{class:'btn danger',onclick:async()=>{const note=prompt('Reason')||'';await post('/api/messages/review',{contact_id:p.contact_id,channel:isEmail?'cold_email':isReply?'public_reply':'linkedin_note',verdict:'reject',note});loadPilots()}},'Reject'))));
+  b.messages.forEach((p,i)=>{const det=h('tr',{hidden:true},h('td',{colspan:8},isEmail?h('div',{},h('div',{class:'subject'},'Subject: '+p.subject),h('div',{class:'msg'},p.body),h('div',{class:'small',style:'margin-top:6px'},'to: '+(p.to||'—')+(p.pending_provider?'  (placeholder: enter the person in the lead drawer)':'')),h('div',{class:'row act-only',style:'margin-top:6px'},h('button',{class:'btn',onclick:()=>copyText('Subject: '+p.subject+'\n\n'+p.body,'e-mail copied')},'Copy e-mail'),h('a',{class:'btn',href:mailtoFor(p)},'Open in mail app'),h('span',{class:'chip neutral'},'status: '+(p.manual_status||'queued')),h('button',{class:'btn good',disabled:!canAct(p),title:actWhy(p),onclick:async()=>{const r=await post('/api/pilot/manual',{batch_id:b.batch_id,contact_id:p.contact_id,status:'sent_by_hand'});toast(r.error||'logged as sent by hand (touch 1)');loadPilots()}},'I sent this by hand'),h('button',{class:'btn',onclick:async()=>{await post('/api/pilot/manual',{batch_id:b.batch_id,contact_id:p.contact_id,status:'skipped'});loadPilots()}},'Skip'))):b.channel==='public_reply'?h('div',{},h('div',{class:'subject'},'Reply in their thread'),h('div',{class:'msg'},p.reply),h('div',{class:'row act-only',style:'margin-top:6px'},h('button',{class:'btn',onclick:()=>copyText(p.reply,'reply copied')},'Copy reply'),p.thread_url?h('a',{class:'btn',href:p.thread_url,target:'_blank',rel:'noopener'},'Open thread'):null,h('span',{class:'chip neutral'},'status: '+(p.manual_status||'queued')),h('button',{class:'btn good',disabled:!canAct(p),title:actWhy(p),onclick:async()=>{const r=await post('/api/pilot/manual',{batch_id:b.batch_id,contact_id:p.contact_id,status:'sent_by_hand'});toast(r.error||'logged as posted');loadPilots()}},'I posted this'),h('button',{class:'btn',onclick:async()=>{await post('/api/pilot/manual',{batch_id:b.batch_id,contact_id:p.contact_id,status:'skipped'});loadPilots()}},'Skip'))):h('div',{class:'grid g2'},h('div',{},h('div',{class:'subject'},'Connection note (≤300 chars)'),h('div',{class:'msg'},p.note),h('button',{class:'btn act-only',style:'margin-top:6px',onclick:()=>{navigator.clipboard.writeText(p.note);toast('note copied')}},'Copy note')),h('div',{},h('div',{class:'subject'},'DM after acceptance'),h('div',{class:'msg'},p.dm),h('div',{class:'row act-only',style:'margin-top:6px'},h('button',{class:'btn',onclick:()=>{navigator.clipboard.writeText(p.dm);toast('DM copied')}},'Copy DM'),p.linkedin_url&&!p.linkedin_url.startsWith('pending')?h('a',{class:'btn',href:p.linkedin_url,target:'_blank',rel:'noopener'},'Open profile'):h('span',{class:'small'},'profile URL pending provider'),h('span',{class:'chip neutral'},'status: '+(p.manual_status||'queued')),h('button',{class:'btn good',disabled:!canAct(p),title:actWhy(p),onclick:async()=>{const r=await post('/api/pilot/manual',{batch_id:b.batch_id,contact_id:p.contact_id,status:'sent_by_hand'});toast(r.error||'logged as sent by hand');loadPilots()}},'I sent this by hand'),h('button',{class:'btn',onclick:async()=>{await post('/api/pilot/manual',{batch_id:b.batch_id,contact_id:p.contact_id,status:'skipped'});loadPilots()}},'Skip')))),
+   h('div',{class:'row',style:'margin-top:10px'},h('button',{class:'btn',onclick:()=>openLead(p.contact_id)},'Open lead (edit / approve there)'),h('button',{class:'btn good review-only',onclick:async()=>{await post('/api/messages/review',{contact_id:p.contact_id,channel:isEmail?'cold_email':isReply?'public_reply':'linkedin_note',verdict:'approve'});toast('approved');loadPilots()}},'Approve'),h('button',{class:'btn danger review-only',onclick:async()=>{const note=prompt('Reason')||'';await post('/api/messages/review',{contact_id:p.contact_id,channel:isEmail?'cold_email':isReply?'public_reply':'linkedin_note',verdict:'reject',note});loadPilots()}},'Reject'))));
    const tr=h('tr',{class:'clickable',onclick:()=>det.hidden=!det.hidden},h('td',{class:'num'},String(i+1)),h('td',{},h('b',{},p.company),h('div',{class:'small'},p.role)),h('td',{},seg(p.segment)),h('td',{},p.country),h('td',{class:'num'},(p.priority??p.score)+' '+p.tier),h('td',{class:'small'},p.rationale),h('td',{},h('span',{class:'chip '+(p.review==='approve'?'good':p.review==='reject'?'crit':'neutral')},p.review)),h('td',{class:'small'},'▾ show message'));
    tb.append(tr,det)});
   tbl.append(tb);card.append(h('div',{class:'scroll',style:'margin-top:10px'},tbl));
-  card.append(h('div',{class:'row',style:'margin-top:10px'},h('a',{class:'btn',href:'#',onclick:async e=>{e.preventDefault();const r=await call('/api/pilot/export?batch_id='+encodeURIComponent(b.batch_id));const blob=await r.blob();const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=b.batch_id+'.json';a.click()}},'Download batch for the local agent (approved, queued items)'),h('button',{class:'btn',onclick:()=>{const inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';inp.onchange=async()=>{const f=inp.files[0];if(f)importResults(b.batch_id,await f.text())};inp.click()}},'Import agent results'),h('span',{class:'small'},(b.manual_sent||0)+' logged as sent')));
-  card.append(h('div',{class:'row',style:'margin-top:12px'},isEmail?h('input',{id:'send-'+b.batch_id,placeholder:'type '+STATE.confirm_phrases.send,style:'width:220px'}):null,isEmail?h('button',{class:'btn danger',disabled:!ok,title:why.join(' · '),onclick:async()=>{const r=await post('/api/pilot/send',{batch_id:b.batch_id,confirm:$('#send-'+b.batch_id).value});toast(r.status+(r.reasons?': '+r.reasons.join('; '):''))}},'Send batch'):null,h('span',{class:'small'},ok?'all conditions met':'Blocked: '+why.join(' · '))));
+  card.append(h('div',{class:'row act-only',style:'margin-top:10px'},h('a',{class:'btn',href:'#',onclick:async e=>{e.preventDefault();const r=await call('/api/pilot/export?batch_id='+encodeURIComponent(b.batch_id));const blob=await r.blob();const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=b.batch_id+'.json';a.click()}},'Download batch for the local agent (approved, queued items)'),h('button',{class:'btn',onclick:()=>{const inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';inp.onchange=async()=>{const f=inp.files[0];if(f)importResults(b.batch_id,await f.text())};inp.click()}},'Import agent results'),h('span',{class:'small'},(b.manual_sent||0)+' logged as sent')));
+  card.append(h('div',{class:'row act-only',style:'margin-top:12px'},isEmail?h('input',{id:'send-'+b.batch_id,placeholder:'type '+STATE.confirm_phrases.send,style:'width:220px'}):null,isEmail?h('button',{class:'btn danger',disabled:!ok,title:why.join(' · '),onclick:async()=>{const r=await post('/api/pilot/send',{batch_id:b.batch_id,confirm:$('#send-'+b.batch_id).value});toast(r.status+(r.reasons?': '+r.reasons.join('; '):''))}},'Send batch'):null,h('span',{class:'small'},ok?'all conditions met':'Blocked: '+why.join(' · '))));
   box.append(card)}}
 async function loadJobs(){const js=await get('/api/jobs');const box=$('#jobList');box.innerHTML='';for(const j of js.sort((a,b)=>b.started.localeCompare(a.started)))box.append(h('div',{style:'padding:8px 0;border-bottom:1px solid var(--border)'},h('a',{href:'#',onclick:async e=>{e.preventDefault();const d=await get('/api/jobs?id='+j.id);$('#jobLog').textContent=d.cmd+'\n\n'+(d.tail||'(no output yet)')}},j.id),' ',h('span',{class:'chip '+(j.status==='done'?'good':j.status==='running'?'warn':'crit')},j.status)))}
-let STARTED=false;function start(){hideGate();revealShell();if(STARTED)return;STARTED=true;refreshState();setInterval(refreshState,15000)}
+let STARTED=false;function start(){hideGate();revealShell();if(STARTED)return;STARTED=true;refreshState().then(()=>showTab((location.hash||'').slice(1)||STEPS[NEXT].id));setInterval(refreshState,15000)}
 async function boot(){let ac;try{ac=await fetch(API+'/api/auth-config').then(r=>r.json())}catch(e){showGate('Cannot reach the pipeline API at '+(API||location.origin)+'.',0);return}
  if(ac.mode!=='firebase'){start();return}
  showGate('Checking for an existing sign-in…',0);
