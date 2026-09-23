@@ -112,6 +112,9 @@ iframe{width:100%;height:82vh;border:1px solid var(--border);border-radius:12px;
         <div><div class="what">Regenerate the simulation charts shown in step 7.</div><div class="how">Runs by itself after each pipeline run.</div></div></div>
       <div style="margin-top:12px"><span class="eyebrow">Recent jobs</span><div id="ovJobs" class="small"></div></div>
     </div>
+    <div class="card"><h3>Services on the website → who we look for → leads found</h3><div id="servicesTable" class="small">loading…</div></div>
+  </div>
+  <div class="grid g2" style="margin-top:14px">
     <div class="card"><h3>Latest run</h3><div class="grid g2" id="ovTiles"></div>
       <h3 style="margin-top:14px">Simulation at day 30 (target tier)</h3><p class="small">P50 and P10–P90 per scenario; P(hit) is the chance of reaching 10 or more.</p><div class="scroll" id="ovSim"></div></div>
   </div>
@@ -134,7 +137,7 @@ iframe{width:100%;height:82vh;border:1px solid var(--border);border-radius:12px;
   <div class="row" style="margin-bottom:10px">
     <input id="leadQ" placeholder="search company or role" oninput="loadLeads()" style="width:240px">
     <select id="leadRegion" onchange="loadLeads()"><option value="">all regions</option><option>EU</option><option>US</option><option>MENA</option></select>
-    <select id="leadSegment" onchange="loadLeads()"><option value="">all segments</option><option value="S1_GCC_INSTITUTIONAL">S1 GCC institutional</option><option value="S2_AI_AGENT_ENTERPRISE">S2 AI-agent enterprise</option><option value="S3_EU_REGULATED_MIDMARKET">S3 EU regulated</option><option value="S4_WEB3_RWA">S4 Web3 / RWA</option><option value="S5_PQ_MANDATE">S5 post-quantum</option></select>
+    <select id="leadSegment" onchange="loadLeads()"><option value="">all segments</option><option value="S1_RWA_TOKENIZATION">S1 RWA tokenization</option><option value="S2_PRIVACY_ENGINEERING">S2 privacy engineering</option><option value="S3_ARCHITECTURE_REVIEW">S3 architecture review</option><option value="S4_ZK_ENGINEERING">S4 ZK engineering</option><option value="S5_PQ_READINESS">S5 post-quantum readiness</option></select>
     <select id="leadChannel" onchange="loadLeads()"><option value="">any lawful channel</option><option value="cold_email">cold email</option><option value="linkedin">LinkedIn</option><option value="warm_intro">warm intro</option><option value="event">event</option><option value="public_reply">public reply (in their thread)</option></select>
     <select id="leadTier" onchange="loadLeads()"><option value="">tier A + B</option><option value="A">tier A only</option></select>
     <input id="leadCountry" placeholder="country" style="width:90px" oninput="loadLeads()">
@@ -160,7 +163,7 @@ iframe{width:100%;height:82vh;border:1px solid var(--border);border-radius:12px;
   <div class="row" style="margin-bottom:10px">
     <input id="msgQ" placeholder="search company or text" oninput="loadMsgs(0)" style="width:240px">
     <select id="msgRegion" onchange="loadMsgs(0)"><option value="">all regions</option><option>EU</option><option>US</option><option>MENA</option></select>
-    <select id="msgSegment" onchange="loadMsgs(0)"><option value="">all segments</option><option value="S1_GCC_INSTITUTIONAL">S1</option><option value="S2_AI_AGENT_ENTERPRISE">S2</option><option value="S3_EU_REGULATED_MIDMARKET">S3</option><option value="S4_WEB3_RWA">S4</option><option value="S5_PQ_MANDATE">S5</option></select>
+    <select id="msgSegment" onchange="loadMsgs(0)"><option value="">all segments</option><option value="S1_RWA_TOKENIZATION">S1 RWA tokenization</option><option value="S2_PRIVACY_ENGINEERING">S2 privacy engineering</option><option value="S3_ARCHITECTURE_REVIEW">S3 architecture review</option><option value="S4_ZK_ENGINEERING">S4 ZK engineering</option><option value="S5_PQ_READINESS">S5 post-quantum readiness</option></select>
     <select id="msgChannel" onchange="loadMsgs(0)"><option value="cold_email">cold email</option><option value="linkedin_note">LinkedIn note</option><option value="linkedin_dm">LinkedIn DM</option><option value="public_reply">public reply</option><option value="cold_call">cold call script</option><option value="">all channels</option></select>
     <select id="msgReview" onchange="loadMsgs(0)"><option value="unreviewed">unreviewed</option><option value="">any review state</option><option value="approve">approved</option><option value="reject">rejected</option></select>
     <span class="small" id="msgTotal"></span>
@@ -245,7 +248,7 @@ const get=u=>call(u).then(r=>r.json());const post=(u,b)=>call(u,{method:'POST',h
 async function loadDash(){try{const r=await call('/dashboard');document.getElementById('dashFrame').srcdoc=await r.text()}catch(e){}}
 let TOAST_T;function toast(m){const t=$('#toast');t.textContent=m;t.style.opacity=1;clearTimeout(TOAST_T);TOAST_T=setTimeout(()=>t.style.opacity=0,4000)}
 const f0=n=>Math.round(n??0).toLocaleString();const pc=n=>Math.round((n??0)*100)+'%';
-const SEG={S1_GCC_INSTITUTIONAL:'S1 GCC institutional',S2_AI_AGENT_ENTERPRISE:'S2 AI-agent enterprise',S3_EU_REGULATED_MIDMARKET:'S3 EU regulated',S4_WEB3_RWA:'S4 Web3 / RWA',S5_PQ_MANDATE:'S5 post-quantum'};
+const SEG={S1_RWA_TOKENIZATION:'S1 RWA tokenization',S2_PRIVACY_ENGINEERING:'S2 privacy engineering',S3_ARCHITECTURE_REVIEW:'S3 architecture review',S4_ZK_ENGINEERING:'S4 ZK engineering',S5_PQ_READINESS:'S5 post-quantum readiness'};
 const seg=s=>SEG[s]||s||'';
 let STATE={},LEAD_OFF=0,MSG_OFF=0;
 const STEPS=[
@@ -256,6 +259,9 @@ const STEPS=[
  {id:'gates',t:'Clear the gates',do:'Sign off what you have actually done. All ten gates must pass before the tool sends anything. Sending by hand is not blocked here.'},
  {id:'act',t:'Send',do:'Per item: copy or open in your mail app, send, then click "I sent this by hand". Or download the batch for the local agent. "Send batch" works only once step 5 is clear and sending is enabled.'},
  {id:'track',t:'Track',do:'Log every reply, meeting and result from the lead drawer. Import agent results in step 6. Do follow-ups when they come due.'}];
+function renderServices(){const el=$('#servicesTable');if(!el)return;const sv=STATE.services||{};const bySeg=(STATE.run||{}).leads_by_segment||{};el.innerHTML='';const t=h('table',{},h('thead',{},h('tr',{},...['Service card','For','Segment','Where we look','Leads'].map(x=>h('th',{},x)))));const b=h('tbody');
+ for(const[k,v]of Object.entries(sv)){if(k.startsWith('_'))continue;b.append(h('tr',{},h('td',{},h('b',{},v.card)),h('td',{class:'small'},v.for),h('td',{},v.segment?h('span',{class:'chip neutral'},SEG[v.segment]||v.segment):h('span',{class:'chip warn'},'selective, no outbound')),h('td',{class:'small'},(v.sources||[]).join(', ')+(v.note?' · '+v.note:'')),h('td',{class:'num'},v.segment?f0(bySeg[v.segment]||0):'—')))}
+ t.append(b);el.append(t)}
 function stepStates(){const c=STATE.counts||{},r=STATE.run||{},g=STATE.gates||{},on=!!(STATE.approvals||{}).sending_enabled;const S=STATE.steps||{collect:{leads:c.leads},leads:{placeholders:c.leads,people:0,excluded:0},messages:{total:c.messages,approved:0,rejected:0,unreviewed:c.messages,lint_fail:(r.summary||{}).lint_failures||0},pilot:{batches:c.pilots,items:0,approved:0,placeholders:0},act:{sent:c.sent,ready:0,queued:0,skipped:0},track:{contacted:c.sent,replies:0,meetings:0,qualified:0,due:0,overdue:0}};const x=k=>S[k]||{};const out=[];
  const col=x('collect');const lastRun=(STATE.jobs||[]).find(j=>j.kind==='run');const live=(STATE.jobs||[]).find(j=>j.kind==='run'&&(j.status==='running'||j.status==='queued'));const age=j=>Math.max(0,Math.round((Date.now()-Date.parse(j.run_started||j.started))/1000));out.push(live?['partial',(live.status==='queued'?'run queued behind '+live.queued_behind+' job(s)':'run in progress · '+age(live)+' s so far')+' · about 3 min here, then steps 2–7 fill in']:r.corpus==='real'&&col.leads>0?['done',f0(c.accounts)+' accounts → '+f0(col.leads)+' leads · run '+(r.generated_at||'').slice(0,10)]:lastRun&&/failed|lost/.test(lastRun.status)?['blocked','last run '+lastRun.status+' — open Logs, then run 1b again']:r.corpus==='synthetic'?['todo','last run used the invented test corpus: run 1b on real accounts']:r.corpus?['blocked','last run produced 0 leads — open Logs, then run 1b again']:['todo','no run yet']);
  const ld=x('leads'),named=(col.leads||0)-(ld.placeholders||0);out.push(ld.people>0?['done',ld.people+' people entered · '+named+' with a public name · '+ld.excluded+' excluded']:named>0?['partial','0 people entered · '+named+' leads already carry a public name · '+f0(ld.placeholders)+' placeholders']:['todo','0 people entered · every lead is a placeholder']);
@@ -280,7 +286,7 @@ async function refreshState(){STATE=await get('/api/state');const r=STATE.run||{
  $('#modeText').textContent=(r.corpus==='real'?'real accounts':r.corpus||'no run')+' · '+(c.sent||0)+' sent';
  $('#killChip').className='mode '+(STATE.approvals.sending_enabled?'':'off');$('#killText').textContent=STATE.approvals.sending_enabled?'SENDING ENABLED':'sending disabled (kill switch)';
  $('#phraseEnable').textContent=STATE.confirm_phrases.enable;$('#pilotRule').textContent=STATE.pilot_rule||'';
- renderStepper();const sa=$('#synthAction');if(sa)sa.hidden=STATE.synthetic_available===false;
+ renderStepper();const sa=$('#synthAction');if(sa)sa.hidden=STATE.synthetic_available===false;renderServices();
  const s=r.summary||{},t=r.targets||{};const tiles=[['Run',r.generated_at?r.generated_at.replace('T',' ').slice(0,16):'none',r.mode||''],['Leads',f0(s.leads),'target '+f0(t.leads_target)+' · '+f0(s.tier_a)+' tier A'],['ICP-fit but consent-only',f0((r.icp_fit_no_channel||{}).consent_required),'need a warm intro or event'],['Messages',f0(s.messages_rendered),f0(s.lint_failures)+' lint failures']];
  const box=$('#ovTiles');box.innerHTML='';for(const[a,b,cc]of tiles)box.append(h('div',{},h('div',{class:'eyebrow'},a),h('div',{class:'val'},b),h('div',{class:'small'},cc)));
  const g=$('#ovGates');g.innerHTML='';$('#gateSummary').textContent=(STATE.gates.passed??0)+' of '+(STATE.gates.total??10)+' pass · send allowed: '+String(!!STATE.gates.send_allowed);
