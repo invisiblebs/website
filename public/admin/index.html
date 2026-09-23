@@ -220,7 +220,7 @@ const $=s=>document.querySelector(s);
 const h=(t,a={},...k)=>{const e=document.createElement(t);for(const[x,v]of Object.entries(a)){if(x==='class')e.className=v;else if(x.startsWith('on'))e.addEventListener(x.slice(2),v);else if(x==='href'){e.setAttribute('href',/^(https?:\/\/|#|mailto:)/i.test(String(v||''))?v:'#')}else if(v!=null&&v!==false)e.setAttribute(x,v===true?'':v)}for(const c of k.flat())if(c!=null)e.append(c.nodeType?c:document.createTextNode(c));return e};
 const API=(window.PIPELINE_API_BASE||'').replace(/\/$/,'');let TOKEN_FN=null;
 async function authHeaders(){return TOKEN_FN?{Authorization:'Bearer '+await TOKEN_FN()}:{}}
-function showGate(msg,code){hideShell();const g=document.getElementById('gate');g.hidden=false;document.getElementById('gateMsg').textContent=msg;document.getElementById('gateBtn').hidden=code===403||code===0;document.getElementById('gateOut').hidden=code!==403}
+function showGate(msg,code){hideShell();const g=document.getElementById('gate');g.hidden=false;document.getElementById('gateMsg').textContent=msg;const b=document.getElementById('gateBtn');b.hidden=code===403||code===0;b.disabled=false;document.getElementById('gateOut').hidden=code!==403}
 function hideGate(){document.getElementById('gate').hidden=true}
 function revealShell(){for(const sel of ['header','#strip','main'])document.querySelector(sel).hidden=false}
 function hideShell(){for(const sel of ['header','#strip','main'])document.querySelector(sel).hidden=true}
@@ -352,11 +352,13 @@ async function loadJobs(){const js=await get('/api/jobs');const box=$('#jobList'
 let STARTED=false;function start(){hideGate();revealShell();if(STARTED)return;STARTED=true;refreshState();setInterval(refreshState,15000)}
 async function boot(){let ac;try{ac=await fetch(API+'/api/auth-config').then(r=>r.json())}catch(e){showGate('Cannot reach the pipeline API at '+(API||location.origin)+'.',0);return}
  if(ac.mode!=='firebase'){start();return}
- showGate('Sign in with a Google account that is on the admin list.',401);
+ showGate('Checking for an existing sign-in…',0);
  const v='12.18.0';const[{initializeApp},A]=await Promise.all([import('https://www.gstatic.com/firebasejs/'+v+'/firebase-app.js'),import('https://www.gstatic.com/firebasejs/'+v+'/firebase-auth.js')]);
  const auth=A.getAuth(initializeApp(ac.firebase,'pipeline-admin'));const out=e=>{if(e)e.preventDefault();A.signOut(auth).then(()=>location.reload())};
- $('#gateBtn').onclick=()=>A.signInWithPopup(auth,new A.GoogleAuthProvider()).catch(e=>showGate(e.message,401));$('#signOut').onclick=out;$('#gateOut').onclick=out;
- A.onAuthStateChanged(auth,async u=>{if(!u){TOKEN_FN=null;return}TOKEN_FN=()=>u.getIdToken();try{const me=await get('/api/whoami');$('#whoText').textContent=me.email;$('#whoChip').hidden=false;start()}catch(e){}})}
+ // The sign-in button is offered only once Firebase has said there is no session. Before this, the button could be shown while a
+ // remembered session was still being restored, so the console appeared "before the login finished" (it was the remembered session).
+ $('#gateBtn').onclick=()=>{const b=$('#gateBtn');b.disabled=true;$('#gateMsg').textContent='Finish signing in in the Google window…';A.signInWithPopup(auth,new A.GoogleAuthProvider()).catch(e=>showGate(e.message,401))};$('#signOut').onclick=out;$('#gateOut').onclick=out;
+ A.onAuthStateChanged(auth,async u=>{if(!u){TOKEN_FN=null;showGate('Sign in with a Google account that is on the admin list.',401);return}TOKEN_FN=()=>u.getIdToken();showGate('Signed in as '+u.email+' · checking the admin list…',0);try{const me=await get('/api/whoami');$('#whoText').textContent=me.email;$('#whoChip').hidden=false;start()}catch(e){}})}
 boot();
 </script>
 </body>
