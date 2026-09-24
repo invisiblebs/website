@@ -108,7 +108,6 @@ iframe{width:100%;height:82vh;border:1px solid var(--border);border-radius:12px;
         <div><div class="what">Find people by what they do: forum posts, DAO budgets, incidents, job ads, code, papers.</div><div class="how">Open sources only. Run 1b again afterwards so the signals score the accounts.</div></div></div>
       <div class="action"><button class="btn" onclick="post('/api/deepsearch/run',{}).then(r=>{toast('deep search: job '+r.job);pollJob(r.job)})">1c · Deep search the web (jobs, projects, tenders)</button>
         <div><div class="what">Search the open web for companies hiring for, or announcing, work we sell: job postings, project and product launches, EU tenders. Companies no register lists become discovered accounts.</div><div class="how">Backends: EU Tenders (always) · Google Programmable Search (needs a key) · Gemini grounded search on Vertex AI (needs the project login). Every finding keeps its URL and date; the query is never evidence. <span id="deepCov"></span></div></div></div>
-      <details id="deepList" style="margin:0 0 10px"><summary class="small">Show the job postings, projects and tenders found (newest first)</summary><div id="deepRows" class="small" style="margin-top:6px;max-height:480px;overflow:auto">loading…</div></details>
       <div class="action"><button class="btn" onclick="post('/api/research/run',{limit:700,max_age_days:14}).then(r=>{toast('researching account websites: job '+r.job);pollJob(r.job)})">1d · Research accounts (their websites)</button>
         <div><div class="what">Read each account's own site: team page (names and titles), careers page and job board (who they are hiring), news and blog (dated events).</div><div class="how">One request a second, cached 14 days. Then run 1b again: named people and fresh intent decide tier A. <span id="researchCov"></span></div></div></div>
       <div class="action" id="synthAction"><button class="btn" onclick="runPipeline('synthetic')">Test run on invented data</button>
@@ -119,6 +118,7 @@ iframe{width:100%;height:82vh;border:1px solid var(--border);border-radius:12px;
     </div>
     <div class="card"><h3>Services on the website → who we look for → leads found</h3><div id="servicesTable" class="small">loading…</div></div>
   </div>
+  <div class="card" style="margin-top:14px"><h3>Found online by deep search: job postings, projects, tenders</h3><details id="deepList" style="margin:0 0 10px"><summary class="small">Show all, newest first</summary><div id="deepRows" class="small" style="margin-top:6px;max-height:480px;overflow:auto">loading…</div></details></div>
   <div class="grid g2" style="margin-top:14px">
     <div class="card"><h3>Latest run</h3><div class="grid g2" id="ovTiles"></div>
       <h3 style="margin-top:14px">Simulation at day 30 (target tier)</h3><p class="small">P50 and P10–P90 per scenario; P(hit) is the chance of reaching 10 or more.</p><div class="scroll" id="ovSim"></div></div>
