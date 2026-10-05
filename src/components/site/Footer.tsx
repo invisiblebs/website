@@ -10,7 +10,7 @@ export default function Footer() {
       <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
         <div>
           <p className="flex items-center gap-2.5 text-sm font-medium text-white">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#161b30]"><img src="/invisible-bits.png" alt="" width={20} height={20} className="h-5 w-5 object-contain" style={{ filter: 'brightness(0) invert(1) drop-shadow(0 0 2px rgba(255,255,255,0.25))' }} /></span>
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#161b30]"><img src="/invisible-bits-hdr.png" alt="" width={20} height={20} className="h-5 w-5 object-contain" /></span>
             Invisible Bits Consulting FZCO
           </p>
           <p className="mt-2 max-w-sm text-xs leading-relaxed text-white/50">

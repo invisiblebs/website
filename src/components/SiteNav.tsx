@@ -139,13 +139,13 @@ export default function SiteNav() {
         aria-label="Invisible Bits — home"
       >
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#161b30]">
+            {/* HDR-encoded mark (Rec.2020 PQ profile): glows on HDR screens; a CSS filter would flatten it to SDR */}
             <img
-              src="/invisible-bits.png"
+              src="/invisible-bits-hdr.png"
               alt=""
               width={26}
               height={26}
               className="h-[26px] w-[26px] object-contain"
-              style={{ filter: 'brightness(0) invert(1) drop-shadow(0 0 3px rgba(255,255,255,0.28))' }}
             />
           </span>
           <span className="text-sm font-medium text-white">Invisible Bits</span>
