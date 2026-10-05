@@ -18,7 +18,7 @@ import path from 'node:path';
 
 const DIST = 'dist';
 const ORIGIN = 'https://invisible-bits.com';
-const DEFAULT_IMAGE = `${ORIGIN}/og-card.png`;
+const DEFAULT_IMAGE = `${ORIGIN}/og-card-v2.png`;
 const BUILD_DATE = new Date().toISOString().slice(0, 10);
 
 // posts.ts is TypeScript — bundle it to a temp ESM file and import it.
