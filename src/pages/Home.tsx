@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ArrowUpRight, Download, GraduationCap } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Download } from 'lucide-react';
 import SiteNav from '@/components/SiteNav';
 import ShinyText from '@/components/ShinyText';
 import Footer from '@/components/site/Footer';
@@ -455,87 +455,6 @@ function TrackRecord() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Principal                                                           */
-/* ------------------------------------------------------------------ */
-
-const EXPERTISE = [
-  'Zero-knowledge proofs & zkVMs',
-  'Protocol & smart contract security',
-  'Post-quantum migration',
-  'Secure multi-party computation',
-  'Trusted computing',
-  'Compiler-based protection (LLVM)',
-];
-
-function Principal() {
-  return (
-    <section id="team" className="relative border-t border-gray-800">
-      <SectionHalo />
-      <div className="mx-auto grid max-w-7xl gap-10 px-5 py-16 md:px-8 md:py-20 lg:grid-cols-[minmax(0,320px)_1fr] lg:gap-16">
-        <div>
-          <img
-            src="/founder.jpg"
-            alt="Portrait of the founder"
-            loading="lazy"
-            width={320}
-            height={400}
-            className="w-56 rounded-2xl border border-gray-800 object-cover sm:w-64 lg:w-full"
-          />
-          <p className="mt-5 flex items-center gap-2 text-sm text-white/60">
-            <GraduationCap className="h-4 w-4 text-[#00F5D4]" aria-hidden="true" />
-            Ph.D., TU Munich — summa cum laude
-          </p>
-          <a
-            href="https://scholar.google.com/citations?user=8rWVCAIAAAAJ"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-2 inline-flex items-center gap-1 text-sm text-white/80 transition-colors hover:text-white"
-          >
-            Publications on Google Scholar
-            <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
-          </a>
-        </div>
-
-        <div>
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-white/60 md:text-sm">
-            Team
-          </p>
-          <h2 className="mt-3 text-3xl font-medium leading-[1.05] tracking-tighter md:text-4xl">
-            Our founder
-          </h2>
-          <p className="mt-2 text-base text-[#00F5D4]">
-            Director &amp; Principal Security Researcher
-          </p>
-
-          <p className="mt-6 max-w-2xl text-sm leading-relaxed text-white/70 md:text-base">
-            Former Head of Cloud Security at SAP, senior research engineer at Quantstamp, and lead
-            ZK cryptography engineer at Zircuit; during his TU Munich research he built
-            anti-tampering defenses for the Chromium browser in collaboration with Google. He has
-            led security audits for 40+ Web3 protocols —
-            including Solana's core protocol, Lido and Ondo Finance — and published fifteen
-            research works on software security, compiler-based protection and zero-knowledge
-            systems.
-          </p>
-
-          <blockquote className="mt-6 max-w-2xl border-l-2 border-[#00F5D4]/50 pl-5 text-sm leading-relaxed text-white/80 md:text-base">
-            Engagement teams are assembled per scope from a vetted network of cryptographers,
-            protocol engineers and infrastructure architects.
-          </blockquote>
-
-          <div className="mt-7 flex flex-wrap gap-2">
-            {EXPERTISE.map((item) => (
-              <span key={item} className="rounded-full border border-gray-700 px-4 py-1.5 text-xs text-white/70">
-                {item}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ------------------------------------------------------------------ */
 /* Talks preview                                                       */
 /* ------------------------------------------------------------------ */
 
@@ -799,7 +718,6 @@ export default function Home() {
       <ProofGrid />
       <Services />
       <TrackRecord />
-      <Principal />
       <TalksPreview />
       <Contact />
       <div className="mx-auto max-w-7xl px-5 md:px-8">

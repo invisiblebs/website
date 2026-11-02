@@ -14,11 +14,10 @@ const LINKS: NavItem[] = [
   { label: 'Services', href: '/#services', spy: 'services' },
   { label: 'Track Record', href: '/#track-record', spy: 'track-record' },
   { label: 'Talks & Writing', href: '/blog', spy: 'blog', external: true },
-  { label: 'Team', href: '/#team', spy: 'team' },
   { label: 'Contact', href: '/#contact', spy: 'contact' },
 ];
 
-const SPY_SECTIONS = ['services', 'track-record', 'team', 'talks', 'contact'];
+const SPY_SECTIONS = ['services', 'track-record', 'talks', 'contact'];
 
 // Sections that should light up a nav item they don't own outright.
 const SPY_ALIAS: Record<string, string> = { talks: 'blog' };

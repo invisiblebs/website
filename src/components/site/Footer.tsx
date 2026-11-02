@@ -22,15 +22,6 @@ export default function Footer() {
             contact@invisible-bits.com
             <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
           </a>
-          <a
-            href="https://scholar.google.com/citations?user=8rWVCAIAAAAJ"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-white/60 transition-colors hover:text-white"
-          >
-            Google Scholar
-            <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
-          </a>
         </div>
       </div>
       <p className="mt-8 max-w-3xl text-[0.7rem] leading-relaxed text-white/40">
