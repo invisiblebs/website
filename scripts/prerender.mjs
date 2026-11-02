@@ -68,10 +68,9 @@ function stampHead(html, { title, description, url, jsonLd, image, imageAlt, ogT
 }
 
 const person = {
-  '@type': 'Person',
-  name: 'Dr. M. Ahmadvand',
-  alternateName: 'Mohsen Ahmadvand',
-  url: `${ORIGIN}/#team`,
+  '@type': 'Organization',
+  name: 'Invisible Bits Consulting FZCO',
+  url: ORIGIN,
 };
 
 async function emit(route, html) {

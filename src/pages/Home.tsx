@@ -474,8 +474,8 @@ function Principal() {
       <div className="mx-auto grid max-w-7xl gap-10 px-5 py-16 md:px-8 md:py-20 lg:grid-cols-[minmax(0,320px)_1fr] lg:gap-16">
         <div>
           <img
-            src="/mason.jpg"
-            alt="Portrait of Dr. M. Ahmadvand"
+            src="/founder.jpg"
+            alt="Portrait of the founder"
             loading="lazy"
             width={320}
             height={400}
@@ -501,7 +501,7 @@ function Principal() {
             Team
           </p>
           <h2 className="mt-3 text-3xl font-medium leading-[1.05] tracking-tighter md:text-4xl">
-            Dr. M. Ahmadvand
+            Our founder
           </h2>
           <p className="mt-2 text-base text-[#00F5D4]">
             Director &amp; Principal Security Researcher

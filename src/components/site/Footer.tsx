@@ -35,7 +35,7 @@ export default function Footer() {
       </div>
       <p className="mt-8 max-w-3xl text-[0.7rem] leading-relaxed text-white/40">
         © {year} Invisible Bits Consulting — FZCO. Audit and engineering credentials cited on this
-        site are those of Dr. M. Ahmadvand, earned at Quantstamp, Zircuit and SAP prior to the founding of the firm. TVL figures are stated as of the time of each audit. An audit is not an endorsement.
+        site are those of the firm's founder, earned at Quantstamp, Zircuit and SAP prior to the founding of the firm. TVL figures are stated as of the time of each audit. An audit is not an endorsement.
       </p>
     </footer>
   );

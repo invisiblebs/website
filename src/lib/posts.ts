@@ -110,7 +110,7 @@ export const posts: Post[] = [
     href: 'https://www.youtube.com/watch?v=aXgediaT4vk',
     youtubeId: 'aXgediaT4vk',
     body: [
-      "Recorded at Fhenix's Encryption Day in Cannes on July 3, 2025, during EthCC week. Dr. Ahmadvand joined the panel as Zircuit's ZK lead, alongside Justin Drake (Ethereum Foundation) and a panelist from Brevis.",
+      "Recorded at Fhenix's Encryption Day in Cannes on July 3, 2025, during EthCC week. Our founder joined the panel as Zircuit's ZK lead, alongside Justin Drake (Ethereum Foundation) and a panelist from Brevis.",
     ],
   },
   {
