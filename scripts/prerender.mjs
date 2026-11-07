@@ -92,6 +92,18 @@ await emit(
   }),
 );
 
+// /privacy (linked from cold emails to UK and EU recipients)
+await emit(
+  'privacy',
+  stampHead(template, {
+    title: 'Privacy notice | Invisible Bits',
+    description:
+      'How Invisible Bits Consulting FZCO handles the business contact details it uses for outreach: sources, legal basis, retention and your right to object.',
+    url: `${ORIGIN}/privacy/`,
+    image: DEFAULT_IMAGE,
+  }),
+);
+
 // Each post
 for (const post of posts) {
   const url = `${ORIGIN}/blog/${post.slug}/`;

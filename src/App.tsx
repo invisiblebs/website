@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
 import NotFound from './pages/NotFound';
+import Privacy from './pages/Privacy';
 
 // The /v1 and /v2 design alternates were removed from the router so draft
 // pages can't leak into the search index; the files remain in src/pages.
@@ -14,6 +15,7 @@ const App = () => (
       <Route path="/" element={<Home />} />
       <Route path="/blog" element={<Blog />} />
       <Route path="/blog/:slug" element={<BlogPost />} />
+      <Route path="/privacy" element={<Privacy />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   </BrowserRouter>
